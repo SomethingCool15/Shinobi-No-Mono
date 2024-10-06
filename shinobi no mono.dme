@@ -1,0 +1,35 @@
+// DM Environment file for shinobi no mono.dme.
+// All manual changes should be made outside the BEGIN_ and END_ blocks.
+// New source code should be placed in .dm files: choose File/New --> Code File.
+
+// BEGIN_INTERNALS
+// END_INTERNALS
+
+// BEGIN_FILE_DIR
+#define FILE_DIR .
+#define FILE_DIR "icons"
+#define FILE_DIR "icons/base"
+#define FILE_DIR "icons/turf"
+// END_FILE_DIR
+
+// BEGIN_PREFERENCES
+// END_PREFERENCES
+
+// BEGIN_INCLUDE
+#include "shinobi no mono.dm"
+#include "Konohagakure.dmm"
+#include "code\area.dm"
+#include "code\obj.dm"
+#include "code\progression.dm"
+#include "code\turf.dm"
+#include "code\world.dm"
+#include "code\items\armour.dm"
+#include "code\items\misc.dm"
+#include "code\items\weapons.dm"
+#include "code\jutsu\jutsu.dm"
+#include "code\mob\mob.dm"
+#include "code\mob\player.dm"
+#include "code\mob\squad.dm"
+#include "code\perks\perks.dm"
+// END_INCLUDE
+
