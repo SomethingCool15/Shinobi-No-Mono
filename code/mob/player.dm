@@ -1,11 +1,13 @@
 player
-    parent_type = /mob
-    icon = 'icons/base/Base_Pale.dmi'
-        
-    Login()
-        ..()
-        playerList += src
+	parent_type = /mob
+	icon = 'icons/base/Base_Pale.dmi'
 
-    Logout()
-        playerList -= src
-        ..()
+	Login()
+		..()
+		playerList += src
+		if(src.ckey in admin5)
+			src.verbs += typesof(/admin5/verb)
+
+	Logout()
+		playerList -= src
+		..()

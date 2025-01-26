@@ -1,0 +1,95 @@
+macro "macro"
+	elem 
+		name = "North+REP"
+		command = ".north"
+	elem 
+		name = "South+REP"
+		command = ".south"
+	elem 
+		name = "East+REP"
+		command = ".east"
+	elem 
+		name = "West+REP"
+		command = ".west"
+	elem 
+		name = "Northeast+REP"
+		command = ".northeast"
+	elem 
+		name = "Northwest+REP"
+		command = ".northwest"
+	elem 
+		name = "Southeast+REP"
+		command = ".southeast"
+	elem 
+		name = "Southwest+REP"
+		command = ".southwest"
+	elem 
+		name = "Center+REP"
+		command = ".center"
+
+
+menu "menu"
+	elem 
+		name = "&Quit"
+		command = ".quit"
+		category = "&File"
+		saved-params = "is-checked"
+
+
+window "default"
+	elem "default"
+		type = MAIN
+		pos = 291,0
+		size = 1592x1037
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		is-default = true
+		saved-params = "pos;size;is-minimized;is-maximized"
+		macro = "macro"
+		menu = "menu"
+		outer-size = 1608x1115
+		outer-pos = 291,0
+		inner-size = 1592x1056
+		inner-pos = 8,51
+		screen-size = 2560x1392
+	elem "input1"
+		type = INPUT
+		pos = 1200,612
+		size = 100x20
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		saved-params = ""
+	elem "map1"
+		type = MAP
+		pos = 0,0
+		size = 1192x1056
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		saved-params = "zoom;letterbox;zoom-mode"
+
+window "window1"
+	elem "window1"
+		type = MAIN
+		pos = 291,0
+		size = 640x480
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		is-visible = false
+		saved-params = "pos;size;is-minimized;is-maximized"
+		outer-size = 656x538
+		outer-pos = 291,0
+		inner-size = 640x499
+		inner-pos = 8,31
+		screen-size = 2560x1392
+	elem "browser1"
+		type = BROWSER
+		pos = 0,0
+		size = 640x480
+		anchor1 = 0,0
+		anchor2 = 100,100
+		background-color = #000000
+		saved-params = ""
+		show-url = true
+
