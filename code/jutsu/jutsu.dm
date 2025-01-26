@@ -52,11 +52,11 @@
         if(usr && usr.client)
             show_jutsu(src.jutsu_name)
 
-/obj/jutsu/Rasengan  // Changed from /datum/jutsu/rasengan
+/obj/jutsu/Rasengan
     New()
         ..("Rasengan", "A powerful spinning sphere of chakra", "A-Rank", 50)
 
-/obj/jutsu/Chidori  // Changed from /datum/jutsu/chidori
+/obj/jutsu/Chidori
     New()
         ..("Chidori", "Lightning blade technique", "A-Rank", 50)
 
@@ -69,6 +69,6 @@
     
     var/obj/jutsu/J = new /obj/jutsu/Rasengan()
     var/obj/jutsu/J2 = new /obj/jutsu/Chidori()
-    jutsu_list += J  // Add to jutsu_list instead of inventory
+    jutsu_list += J
     jutsu_list += J2
     src << "You learned [J.jutsu_name]!"

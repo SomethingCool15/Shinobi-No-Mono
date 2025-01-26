@@ -58,7 +58,7 @@ mob
             return "E"
     
     Stat()
-        ..() // Call the parent Stat() to ensure default behavior
+        ..()
         statpanel("Stats")
         stat("Strength", "[strength] ([getStatGrade(strength)])")
         stat("Endurance", "[endurance] ([getStatGrade(endurance)])")
@@ -67,7 +67,7 @@ mob
         stat("Control", "[control] ([getStatGrade(control)])")
         stat("Stamina", "[stamina] ([getStatGrade(stamina)])")
         stat("Chakra", "[chakra] ([getStatGrade(chakra)])")
-        stat("----------------------------------------------") // Blank line for separation
+        stat("----------------------------------------------")
         stat("Stat Points", "[statPoints]")
         stat("PP", "[unspentPP]/[totalPP]")
         stat("Rank", "[rank]")

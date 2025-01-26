@@ -2,7 +2,6 @@
 /datum/databook_page
     var/content = ""  // Will store the complete HTML for each page
 
-// Homepage implementation
 /datum/databook_page/home
     var/datum/databook/owner
 
@@ -32,7 +31,6 @@
             </html>
         "}
 
-// Placeholder for combat page
 /datum/databook_page/combat
     var/datum/databook/owner
 
@@ -55,7 +53,6 @@
             </html>
         "}
 
-// Placeholder for world page
 /datum/databook_page/world
     var/datum/databook/owner
 
@@ -78,7 +75,7 @@
             </html>
         "}
 
-// Add a dynamic page type for custom pages
+// Dynamic page type for custom pages
 /datum/databook_page/dynamic
     var/datum/databook/owner
     var/page_title

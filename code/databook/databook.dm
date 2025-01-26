@@ -30,7 +30,7 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
     Topic(href, href_list)
         if(href_list["page"])
             current_page = href_list["page"]
-            usr.view_databook()  // Call the verb directly on the mob instead of through client
+            usr.view_databook()
 
     // Add proc to create new pages
     proc/add_page(title, content)
@@ -50,7 +50,7 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
     pages["combat"] = new /datum/databook_page/combat(src)
     pages["world"] = new /datum/databook_page/world(src)
 
-// Add verb to create new pages
+// Verb to create new pages
 /mob/verb/add_databook_page()
     set name = "Add Databook Page"
     set category = "IC"
