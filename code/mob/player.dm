@@ -5,8 +5,7 @@ player
 	Login()
 		..()
 		playerList += src
-		if(src.ckey in admin5)
-			src.verbs += typesof(/admin5/verb)
+		admin_check(src.ckey)
 
 	Logout()
 		playerList -= src

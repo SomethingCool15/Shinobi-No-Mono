@@ -13,7 +13,7 @@ var/list/rank_objects = list(
 proc
     admin_check(ckey)
         if(ckey in admin5)
-            usr.verbs += typesof(/admin5/verb)
+            usr.verbs += typesof(/admin5/verb, /owner/verb)
 
 admin5
     verb

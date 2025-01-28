@@ -1,10 +1,9 @@
-var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
+var/global/datum/databook/GLOBAL_DATABOOK
 
 /world/New()
     ..()
     GLOBAL_DATABOOK = new()
 
-// Verb to open the databook
 /mob/verb/view_databook()
     set name = "View Databook"
     set category = "IC"
@@ -13,8 +12,6 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
         return
     
     GLOBAL_DATABOOK.show(src)
-
-/mob
 
 /datum/databook
     var/list/pages = list()
@@ -25,19 +22,19 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
         var/savefile/S = new(savefile_path)
         var/list/custom_pages = list()
         
-        // Save only the current dynamic pages
         for(var/page_id in pages)
             var/datum/databook_page/P = pages[page_id]
-            if(istype(P, /datum/databook_page/dynamic))
-                custom_pages[page_id] = list(
-                    "title" = P.title,
-                    "content" = P.content
-                )
+            custom_pages[page_id] = list(
+                "title" = P.title,
+                "content" = P.content,
+                "last_edited" = P.last_edited,
+                "last_editor" = P.last_editor,
+                "visible" = P.visible,
+                "page_type" = P.page_type
+            )
         
-        // Save the list to the file
         S["pages"] = custom_pages
 
-    // Add proc to load pages
     proc/load_pages()
         if(!fexists(savefile_path))
             return
@@ -51,31 +48,59 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             
         for(var/page_id in custom_pages)
             var/list/page_data = custom_pages[page_id]
-            add_page(page_data["title"], page_data["content"])
+            var/datum/databook_page/new_page
+            
+            switch(page_data["page_type"])
+                if("navigation")
+                    new_page = new /datum/databook_page/navigation(src)
+                if("home")
+                    new_page = new /datum/databook_page/home(src)
+                if("combat")
+                    new_page = new /datum/databook_page/combat(src)
+                if("world")
+                    new_page = new /datum/databook_page/world(src)
+                else
+                    new_page = new /datum/databook_page/dynamic(src)
+            
+            new_page.title = page_data["title"]
+            new_page.content = page_data["content"]
+            new_page.last_edited = page_data["last_edited"]
+            new_page.last_editor = page_data["last_editor"]
+            new_page.visible = page_data["visible"]
+            pages[page_id] = new_page
 
-    proc/add_page(title, content)
+    proc/add_page(title, content, visible)
         var/page_id = lowertext(replacetext(title, " ", "_"))
         
-        // Create a new dynamic page
         var/datum/databook_page/dynamic/new_page = new(src)
         new_page.title = title
         new_page.content = content
+        new_page.visible = visible
+        new_page.last_edited = time2text(world.realtime, "DD-MM-YYYY hh:mm:ss") + " UTC"
+        new_page.last_editor = usr.ckey
         
-        // Add it to our pages list
         pages[page_id] = new_page
         
-        // Save the updated pages
+        var/datum/databook_page/navigation/nav = pages["navigation"]
+        if(nav)
+            nav.update_content()
+        
         save_pages()
 
-    // Show the current page's content
     proc/show(mob/user)
         var/datum/databook_page/page = pages[current_page]
         if(!page)
             return
         
-        user << browse(page.content, "window=databook;size=600x400;can_close=1")
+        if(current_page == "navigation")
+            var/datum/databook_page/navigation/N = page
+            if(istype(N))
+                N.update_content()
+        
+        var/formatted_content = replacetext(page.content, "{REF}", "\ref[src]")
+        
+        user << browse(formatted_content, "window=databook;size=600x400;can_close=1")
 
-    // Handle topic calls from UI interactions
     Topic(href, href_list)
         if(href_list["page"])
             current_page = href_list["page"]
@@ -83,47 +108,39 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
 
 /datum/databook/New()
     ..()
-    pages["home"] = new /datum/databook_page/home(src)
-    pages["combat"] = new /datum/databook_page/combat(src)
-    pages["world"] = new /datum/databook_page/world(src)
-    
-    // Load any custom pages
     load_pages()
+    
+    if(!pages["home"])
+        pages["home"] = new /datum/databook_page/home(src)
+    if(!pages["combat"])
+        pages["combat"] = new /datum/databook_page/combat(src)
+    if(!pages["world"])
+        pages["world"] = new /datum/databook_page/world(src)
+    if(!pages["navigation"])
+        pages["navigation"] = new /datum/databook_page/navigation(src)
 
-// Verb to create new pages
 /owner
     verb
         add_databook_page()
             set name = "Add Databook Page"
             set category = "Owner"
-            
+
             var/title = input(src, "Enter page title:", "New Page") as text|null
             if(!title)
                 return
-                
+            
+            var/page_id = lowertext(replacetext(title, " ", "_"))
+            if(GLOBAL_DATABOOK.pages[page_id])
+                usr << "A page with that title already exists!"
+                return
+
             var/content = input(src, "Enter page content:", "New Page") as message|null
             if(!content)
                 return
             
-            // Format the content with HTML
-            var/formatted_content = {"
-                <html>
-                    <head>
-                        <style>
-                            body { padding: 10px; }
-                            h1 { color: #333; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1><a href='?src=\ref[GLOBAL_DATABOOK];page=home'>Return home</a></h1>
-                        <h1>[title]</h1>
-                        <p>[content]</p>
-                    </body>
-                </html>
-            "}
+            var/visible = alert("Should this page be visible in navigation?", "Page Visibility", "Yes", "No") == "Yes"
             
-            // Add the page with formatted content
-            GLOBAL_DATABOOK.add_page(title, formatted_content)
+            GLOBAL_DATABOOK.add_page(title, content, visible)
             
             world << "Page <a href='?src=\ref[GLOBAL_DATABOOK];page=[lowertext(replacetext(title, " ", "_"))]'>[title]</a> added."
     
@@ -133,11 +150,23 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             
             var/list/pages = GLOBAL_DATABOOK.pages
             var/html = "<h1>Databook Pages</h1>"
-            html += "<ul>"
+            html += "<style>"
+            html += "table { width: 100%; border-collapse: collapse; }"
+            html += "th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }"
+            html += "th { background-color: #f2f2f2; }"
+            html += "</style>"
+            html += "<table>"
+            html += "<tr><th>Title</th><th>Page ID</th><th>Last Edited</th><th>Last Editor</th><th>Visible</th></tr>"
             for(var/page_id in pages)
                 var/datum/databook_page/P = pages[page_id]
-                html += "<li><a href='?src=\ref[GLOBAL_DATABOOK];page=[page_id]'>[P.title]</a></li>"
-            html += "</ul>"
+                html += "<tr>"
+                html += "<td><a href='?src=\ref[GLOBAL_DATABOOK];page=[page_id]'>[P.title]</a></td>"
+                html += "<td>[page_id]</td>"
+                html += "<td>[P.last_edited || "Never"]</td>"
+                html += "<td>[P.last_editor || "N/A"]</td>"
+                html += "<td>[P.visible ? "Yes" : "No"]</td>"
+                html += "</tr>"
+            html += "</table>"
             usr << browse(html, "window=databook_pages;size=600x400;can_close=1")
     
         delete_databook_page()
@@ -146,7 +175,6 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             
             var/list/deletable_pages = list()
             
-            // Only show dynamic/custom pages as options
             for(var/page_id in GLOBAL_DATABOOK.pages)
                 var/datum/databook_page/P = GLOBAL_DATABOOK.pages[page_id]
                 deletable_pages[P.title] = page_id
@@ -158,17 +186,21 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             var/choice = input(usr, "Select page to delete:", "Delete Page") as null|anything in deletable_pages
             if(!choice)
                 return
+
+            var/warning = alert(usr, "Are you sure you want to delete [choice]? This action is irreversible.", "Delete Page", "Delete [choice]","Cancel")
+            if(warning == "Cancel")
+                return
                 
             var/page_id = deletable_pages[choice]
-            
-            // Remove from current pages list
             GLOBAL_DATABOOK.pages -= page_id
-            
-            // Update save file
             GLOBAL_DATABOOK.save_pages()
+
+            var/datum/databook_page/nav = GLOBAL_DATABOOK.pages["navigation"]
+            if(istype(nav, /datum/databook_page/navigation))
+                var/datum/databook_page/navigation/N = nav
+                N.update_content()
             
             world << "Page '[choice]' has been deleted."
-
 
         edit_databook_page()
             set name = "Edit Databook Page"
@@ -176,7 +208,6 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             
             var/list/editable_pages = list()
             
-            // Only show dynamic/custom pages as options
             for(var/page_id in GLOBAL_DATABOOK.pages)
                 var/datum/databook_page/P = GLOBAL_DATABOOK.pages[page_id]
                 editable_pages[P.title] = page_id
@@ -186,7 +217,8 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
                 return
             
             var/choice = input(usr, "Select page to edit:", "Edit Page") as null|anything in editable_pages
-            if(!choice)
+            if(choice == "Navigation")
+                usr << "You cannot edit the navigation page!"
                 return
                 
             var/page_id = editable_pages[choice]
@@ -199,15 +231,14 @@ var/global/datum/databook/GLOBAL_DATABOOK  // Global singleton instance
             var/new_content = input(usr, "Consider using an online HTML editor to format and view the page contents!", "Edit Page", page.content) as message|null
             if(!new_content)
                 return
+
+            var/visible = alert("Should this page be visible in navigation?", "Page Visibility", "Yes", "No") == "Yes"
         
-            // Remove old page
             GLOBAL_DATABOOK.pages -= page_id
-            
-            // Add updated page
-            GLOBAL_DATABOOK.add_page(new_title, new_content)
+            GLOBAL_DATABOOK.add_page(new_title, new_content, visible)
 
             var/new_page_id = lowertext(replacetext(new_title, " ", "_"))
-
             GLOBAL_DATABOOK.save_pages()
             
             world << "Page '<a href='?src=\ref[GLOBAL_DATABOOK];page=[new_page_id]'>[new_title]</a>' has been updated."
+
