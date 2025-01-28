@@ -1,5 +1,6 @@
 // Base page datum
 /datum/databook_page
+    var/title = ""
     var/content = ""  // Will store the complete HTML for each page
 
 /datum/databook_page/home
@@ -8,6 +9,7 @@
     New(datum/databook/D)
         ..()
         owner = D
+        title = "Home"
         content = {"
             <html>
                 <head>
@@ -37,6 +39,7 @@
     New(datum/databook/D)
         ..()
         owner = D
+        title = "Combat Guide"
         content = {"
             <html>
                 <head>
@@ -59,6 +62,7 @@
     New(datum/databook/D)
         ..()
         owner = D
+        title = "World Information"
         content = {"
             <html>
                 <head>
@@ -86,6 +90,7 @@
 
     proc/setup(title, content_text)
         page_title = title
+        src.title = title
         content = {"
             <html>
                 <head>
