@@ -97,7 +97,7 @@ var/global/datum/databook/GLOBAL_DATABOOK
             if(istype(N))
                 N.update_content()
         
-        var/formatted_content = replacetext(page.content, "{REF}", "\ref[src]")
+        var/formatted_content = replacetext(page.content, "{databook}", "<a href='?src=\ref[src];")
         
         user << browse(formatted_content, "window=databook;size=600x400;can_close=1")
 
