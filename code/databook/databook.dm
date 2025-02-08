@@ -148,25 +148,44 @@ var/global/datum/databook/GLOBAL_DATABOOK
             set name = "View Databook Pages"
             set category = "Owner"
             
-            var/list/pages = GLOBAL_DATABOOK.pages
-            var/html = "<h1>Databook Pages</h1>"
-            html += "<style>"
-            html += "table { width: 100%; border-collapse: collapse; }"
-            html += "th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }"
-            html += "th { background-color: #f2f2f2; }"
-            html += "</style>"
-            html += "<table>"
-            html += "<tr><th>Title</th><th>Page ID</th><th>Last Edited</th><th>Last Editor</th><th>Visible</th></tr>"
-            for(var/page_id in pages)
-                var/datum/databook_page/P = pages[page_id]
-                html += "<tr>"
-                html += "<td><a href='?src=\ref[GLOBAL_DATABOOK];page=[page_id]'>[P.title]</a></td>"
-                html += "<td>[page_id]</td>"
-                html += "<td>[P.last_edited || "Never"]</td>"
-                html += "<td>[P.last_editor || "N/A"]</td>"
-                html += "<td>[P.visible ? "Yes" : "No"]</td>"
-                html += "</tr>"
-            html += "</table>"
+            var/html = {"
+                <h1>Databook Pages</h1>
+                <style>
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                    }
+                    th, td { 
+                        padding: 8px; 
+                        text-align: left; 
+                        border: 1px solid #ddd; 
+                    }
+                    th { 
+                        background-color: #f2f2f2; 
+                    }
+                </style>
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <th>Page ID</th>
+                        <th>Last Edited</th>
+                        <th>Last Editor</th>
+                        <th>Visible</th>
+                    </tr>"}
+            
+            var/rows = ""
+            for(var/page_id in GLOBAL_DATABOOK.pages)
+                var/datum/databook_page/P = GLOBAL_DATABOOK.pages[page_id]
+                rows += {"
+                    <tr>
+                        <td><a href='?src=\ref[GLOBAL_DATABOOK];page=[page_id]'>[P.title]</a></td>
+                        <td>[page_id]</td>
+                        <td>[P.last_edited || "Never"]</td>
+                        <td>[P.last_editor || "N/A"]</td>
+                        <td>[P.visible ? "Yes" : "No"]</td>
+                    </tr>"}
+            
+            html += rows + "</table>"
             usr << browse(html, "window=databook_pages;size=600x400;can_close=1")
     
         delete_databook_page()
@@ -217,6 +236,9 @@ var/global/datum/databook/GLOBAL_DATABOOK
                 return
             
             var/choice = input(usr, "Select page to edit:", "Edit Page") as null|anything in editable_pages
+            if(!choice)
+                return
+
             if(choice == "Navigation")
                 usr << "You cannot edit the navigation page!"
                 return
