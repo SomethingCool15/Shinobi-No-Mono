@@ -29,6 +29,10 @@ mob
         list/perk_list = list()
         list/jutsu_list = list()
 
+    New()
+        ..()
+        perk_list += "Test Requirement"
+
     proc/getStatGrade(statValue)
         if(statValue <= 5)
             return "E"
@@ -138,3 +142,7 @@ mob
     Move()
         if(canMove)
             ..() //Allow parent proc to execute
+
+    proc/has_perk(perk_name)
+        if(!perk_name) return 1  // If no perk required, return true
+        return (perk_name in perk_list)  // Check if perk exists in their list
