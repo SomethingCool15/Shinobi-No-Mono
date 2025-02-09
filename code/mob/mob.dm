@@ -135,9 +135,6 @@ mob
             chakra += 1
             unspentPP -= 1
             usr << "Chakra increased by 1. New chakra: [chakra]."
-        
-        say(message as text)
-            world << "<span style='color: red;'>[usr.name]: [message]</span>"
 
     Move()
         if(canMove)

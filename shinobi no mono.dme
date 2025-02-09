@@ -39,5 +39,8 @@
 #include "code\villages\Konohagakure.dm"
 #include "code\villages\Sunagakure.dm"
 #include "code\villages\village.dm"
+#include "code\webhook\discord_webhook.dm"
+#include "code\webhook\http_post.dm"
+#include "code\webhook\key_info.dm"
 // END_INCLUDE
 
