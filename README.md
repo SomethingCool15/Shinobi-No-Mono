@@ -38,9 +38,6 @@ Built using BYOND (Build Your Own Net Dream) engine, featuring:
 ## Development Status
 This project is currently in active development. Features and mechanics are subject to change.
 
-## License
-All rights reserved. This project is proprietary and confidential.
-
 ---
 
 *"In the world of shinobi, one must look underneath the underneath."*
