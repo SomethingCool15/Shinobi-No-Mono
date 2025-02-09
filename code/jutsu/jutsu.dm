@@ -195,6 +195,8 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
         jutsu_list = list()
         
         if(!fexists(savefile_path))
+            // First time setup - create empty database
+            save_jutsu()
             return
             
         var/savefile/S = new(savefile_path)
@@ -202,6 +204,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
         
         S["jutsu"] >> loaded_jutsu
         if(!loaded_jutsu)
+            //If no data found, return
             return
             
         for(var/list/jutsu_data in loaded_jutsu)
@@ -292,6 +295,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
 
             var/list/jutsu_names = list()
             for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
+                // Add the juts name to list and give its value  as the object reference
                 jutsu_names[J.jutsu_name] = J
             
             var/choice = input(usr, "Select jutsu to delete:", "Delete Jutsu") as null|anything in jutsu_names
@@ -381,10 +385,12 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 usr << "No jutsu to edit!"
                 return
             
+            // Get the user to select a jutsu to edit
             var/choice = input(usr, "Select jutsu to edit:", "Edit Jutsu") as null|anything in editable_jutsu
             if(!choice)
                 return
-                
+            
+            // Get the object reference of the jutsu
             var/obj/jutsu/jutsu = editable_jutsu[choice]
             
             var/new_name = input(usr, "Edit jutsu name:", "Edit Jutsu", jutsu.jutsu_name) as text|null
@@ -486,9 +492,12 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                         new_section_requirements -= remove_choice
                         new_extra_sections -= remove_choice
 
+            // Create new jutsu with the new values
             var/obj/jutsu/new_jutsu = new(new_name, new_element, new_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements)
             
+             // Use object reference to find and delete the old jutsu
             GLOBAL_JUTSU_MANAGER.jutsu_list -= jutsu
+            // Add new jutsu to list
             GLOBAL_JUTSU_MANAGER.jutsu_list += new_jutsu
             
             // Save changes
@@ -500,23 +509,28 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             set name = "Add Ruling"
             set category = "Owner"
             
+            // Get the list of jutsu names and their object references
             var/list/jutsu_names = list()
             for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
                 jutsu_names[J.jutsu_name] = J
             
+            // Get the user to select a jutsu to add a ruling to
             var/choice = input(usr, "Select jutsu to add ruling to:", "Add Ruling") as null|anything in jutsu_names
             if(!choice)
                 return
                 
+            // Get the object reference of the jutsu
             var/obj/jutsu/selected_jutsu = jutsu_names[choice]
             
             var/ruling_text = input(usr, "Enter the ruling:", "Add Ruling") as null|message
             if(!ruling_text)
                 return
             
+            // Create a new ruling with the text and the user's ckey
             var/datum/ruling/R = new(ruling_text, usr.ckey)
+            // Add the ruling to the jutsu's ruling list
             selected_jutsu.rulings += R
-            
+            // Save the jutsu
             GLOBAL_JUTSU_MANAGER.save_jutsu()
             usr << "Added ruling to [selected_jutsu.jutsu_name]"
 
@@ -524,6 +538,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             set name = "Edit Ruling"
             set category = "Owner"
             
+            // Get the list of jutsu names and their object references
             var/list/jutsu_names = list()
             for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
                 if(length(J.rulings))
@@ -532,24 +547,27 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             if(!length(jutsu_names))
                 usr << "No jutsu have rulings to edit!"
                 return
-                
+            
+            // Get the user to select a jutsu to edit a ruling from
             var/choice = input(usr, "Select jutsu to edit ruling from:", "Edit Ruling") as null|anything in jutsu_names
             if(!choice)
                 return
-                
+            
+            // Get the object reference of the jutsu
             var/obj/jutsu/selected_jutsu = jutsu_names[choice]
             
+            // Create mapping of ruling display text to ruling objects
             var/list/ruling_texts = list()
-            var/i = 1
             for(var/datum/ruling/R in selected_jutsu.rulings)
-                ruling_texts["[R.text] (by [R.author] on [R.date])"] = i++
+                ruling_texts["[R.text] (by [R.author] on [R.date])"] = R  // Store reference to ruling
             
+            // Let user pick ruling
             var/ruling_choice = input(usr, "Select ruling to edit:", "Edit Ruling") as null|anything in ruling_texts
             if(!ruling_choice)
                 return
-                
-            var/index = ruling_texts[ruling_choice]
-            var/datum/ruling/R = selected_jutsu.rulings[index]
+
+            // Get the ruling object directly
+            var/datum/ruling/R = ruling_texts[ruling_choice]
             
             var/new_text = input(usr, "Edit ruling:", "Edit Ruling", R.text) as null|message
             if(!new_text)
@@ -566,6 +584,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             set name = "Delete Ruling"
             set category = "Owner"
             
+            // Get the list of jutsu names and their object references
             var/list/jutsu_names = list()
             for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
                 if(length(J.rulings))
@@ -574,25 +593,31 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             if(!length(jutsu_names))
                 usr << "No jutsu have rulings to delete!"
                 return
-                
+
+            // Get the user to select a jutsu to delete a ruling from
             var/choice = input(usr, "Select jutsu to delete ruling from:", "Delete Ruling") as null|anything in jutsu_names
             if(!choice)
                 return
-                
+
+            // Store jutsu object reference
             var/obj/jutsu/selected_jutsu = jutsu_names[choice]
             
+            // Store list of rulings and their object references
             var/list/ruling_texts = list()
-            var/i = 1
             for(var/datum/ruling/R in selected_jutsu.rulings)
-                ruling_texts["[R.text] (by [R.author] on [R.date])"] = i++
+                // Assigning each ruling a display text and memory reference
+                ruling_texts["[R.text] (by [R.author] on [R.date])"] = R
             
+            // User picks ruling to delete
             var/ruling_choice = input(usr, "Select ruling to delete:", "Delete Ruling") as null|anything in ruling_texts
             if(!ruling_choice)
                 return
                 
-            var/index = ruling_texts[ruling_choice]
-            selected_jutsu.rulings -= selected_jutsu.rulings[index]
+            // Delete the ruling via memory reference
+            // In byond, [] is to pass in the key to return value
+            selected_jutsu.rulings -= ruling_texts[ruling_choice]
             
+            // Save the jutsu
             GLOBAL_JUTSU_MANAGER.save_jutsu()
             usr << "Deleted ruling from [selected_jutsu.jutsu_name]"
 
