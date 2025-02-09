@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Rogues</title>
+    <title>Skillcard</title>
     <style>
       body {
         background: none;
@@ -55,14 +55,30 @@
       .Title {
         background: linear-gradient(#dbc3a3, #d2b48c);
         padding: 10px;
-        font-size: 24px; /* Fixed font size */
+        font-size: 24px;
         font-weight: bold;
         color: #2d2d2d;
         text-shadow: 1px 1px 2px black;
         border-radius: 10px;
         margin-bottom: 10px;
         text-align: center;
-        position: relative; /* For positioning the icon */
+        position: relative; /* For positioning elements */
+        display: flex; /* Added for layout */
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center title text */
+      }
+
+      /* Add new styles for the title rulings button */
+      .title-rulings-button {
+        position: absolute;
+        left: 10px;
+        padding: 5px 10px;
+        background-image: url("https://i.ibb.co/Zz1vfqtg/free-information-icon-348-thumb.png");
+        width: 10px;
+        height: 20px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
       }
 
       hr {
@@ -91,20 +107,19 @@
       /* Jutsu Stats Section as a Table */
       .jutsu-stats {
         background: #d2b48c; /* Light brown background */
-        padding: 15px;
+        padding: 5px;
         border-radius: 10px;
         border: 2px solid #636b2f;
         margin-top: 10px;
       }
 
       table {
-        width: 100%;
+        width: 75%;
         border-collapse: collapse; /* Ensures borders merge into a single line */
       }
 
       th,
       td {
-        padding: 8px;
         text-align: left;
         border-left: 1px solid #d2b48c; /* Vertical lines between columns, blending with the background */
         border-top: 1px solid #d2b48c; /* Horizontal lines between rows, blending with the background */
@@ -172,6 +187,7 @@
     <div class="scroll-container">
       <div class="scroll-content">
         <div class="Title">
+          <a href="{jutsuref}" class="title-rulings-button"></a>
           Test Jutsu
           <div class="icon">
             <img src="[icon_url]" alt="Icon" />
@@ -205,9 +221,7 @@
             </tr>
           </table>
         </div>
-
         <hr />
-
         <font size="3">
           Missing-nin (抜け忍, nukenin) are ninja who abandon their village with
           no intention of returning. Missing-nin are criminals in effect, if not
@@ -218,11 +232,9 @@
           continue wearing their village's forehead protector, they no longer
           swear allegiance to their village.
         </font>
-
         <hr />
-
         <div class="jutsu-info">
-          <center><div class="sub-heading">Jutsu Info</div></center>
+          <div class="sub-heading">Jutsu Info</div>
           <font size="3">
             <ul class="custom-bullet">
               <li>
@@ -241,6 +253,7 @@
             <!--SECTIONS-->
           </font>
         </div>
+        <hr />
       </div>
     </div>
   </body>
