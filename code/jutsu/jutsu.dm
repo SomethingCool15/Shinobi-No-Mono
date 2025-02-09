@@ -1,3 +1,17 @@
+/datum/ruling
+    var/text
+    var/author
+    var/date
+    var/last_editor
+    var/last_edited
+    
+    New(new_text, new_author)
+        text = new_text
+        author = new_author
+        date = time2text(world.realtime, "DD-MM-YYYY")
+        last_editor = author
+        last_edited = date
+
 /obj/jutsu
     var/jutsu_name
     var/jutsu_element
@@ -10,7 +24,7 @@
     var/list/jutsu_requirements = list()
     var/list/rulings = list()
 
-    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements)
+    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements, new_last_edited, new_last_editor, new_rulings)
         ..()
         jutsu_name = new_jutsu_name
         jutsu_element = new_jutsu_element
@@ -19,9 +33,10 @@
         extra_sections = new_extra_sections
         pp_cost = new_pp_cost
         jutsu_requirements = islist(new_jutsu_requirements) ? new_jutsu_requirements : list(new_jutsu_requirements)
-        last_edited = time2text(world.realtime, "DD-MM-YYYY hh:mm:ss") + " UTC"
-        last_editor = usr.ckey
-
+        last_edited = new_last_edited || time2text(world.realtime, "DD-MM-YYYY") + " UTC"
+        last_editor = new_last_editor || usr.ckey
+        rulings = islist(new_rulings) ? new_rulings : list()
+        
     proc/show_jutsu(jutsu_name)
         world << "[usr] has activated a technique! <a href='?src=\ref[src];jutsu=[jutsu_name]'>[jutsu_name]</a>"
 
@@ -38,6 +53,7 @@
         var/display_html = jutsu_description
         
         display_html = replacetext(display_html, "\[icon_url]", get_jutsu_icon(jutsu_element))
+        display_html = replacetext(display_html, "{jutsuref}", "?src=\ref[src];rulings=1")
         display_html = replacetext(display_html, "{databook}", "<a href='?src=\ref[GLOBAL_DATABOOK];")
         
         if(usr && usr.client)
@@ -65,10 +81,48 @@
                 display_html = copytext(display_html, 1, insert_position) + sections_html + copytext(display_html, insert_position + comment_length)
         
         return display_html
+    
+    proc/get_rulings_html()
+        var/rulings_html = GLOBAL_JUTSU_MANAGER.rulings_template
+        var/table_rows = ""
+        
+        if(length(rulings))
+            table_rows += {"
+                <tr class="table-title">
+                    <td><font>Rule</font></td>
+                    <td><font>Created by</font></td>
+                    <td><font>Date</font></td>
+                    <td><font>Last Editor</font></td>
+                    <td><font>Last Edited</font></td>
+                </tr>
+            "}
+            
+            for(var/datum/ruling/R in rulings)
+                table_rows += {"
+                    <tr>
+                        <td><font size="2">[R.text]</font></td>
+                        <td><font size="2">[R.author]</font></td>
+                        <td><font size="2">[R.date]</font></td>
+                        <td><font size="2">[R.last_editor]</font></td>
+                        <td><font size="2">[R.last_edited]</font></td>
+                    </tr>
+                "}
+        else
+            table_rows = {"
+                <tr>
+                    <td colspan="5"><center><font size="2">No rulings have been made for this jutsu.</font></center></td>
+                </tr>
+            "}
+        
+        rulings_html = replacetext(rulings_html, "<!--RULINGS-->", table_rows)
+        return rulings_html
 
     Topic(href, href_list)
         if(href_list["jutsu"]) 
             usr << browse(get_formatted_html(usr, performer = usr), "window=jutsu_[jutsu_name];size=520x680;can_close=1;can_resize=0;border=0;is-naked=1")
+        if(href_list["rulings"])
+            var/html = get_rulings_html()
+            usr << browse(html, "window=jutsu_rulings;size=800x800;can_close=1;can_resize=0;border=0;is-naked=1")
 
     DblClick()
         if(usr && usr.client)
@@ -98,13 +152,29 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
 /datum/jutsu_manager
     var/list/jutsu_list = list()
     var/savefile_path = "data/jutsu_database.sav"
+    var/rulings_template
+
+    New()
+        ..()
+        jutsu_list = list()
+        rulings_template = file2text("code/jutsu/rulings.html")
 
     proc/save_jutsu()
         var/savefile/S = new(savefile_path)
         var/list/saved_jutsu = list()
         
         for(var/obj/jutsu/J in jutsu_list)
-            saved_jutsu += list(list(
+            var/list/saved_rulings = list()
+            for(var/datum/ruling/R in J.rulings)
+                saved_rulings += list(list(
+                    "text" = R.text,
+                    "author" = R.author,
+                    "date" = R.date,
+                    "last_editor" = R.last_editor,
+                    "last_edited" = R.last_edited
+                ))
+            
+            var/list/jutsu_data = list(
                 "jutsu_name" = J.jutsu_name,
                 "jutsu_element" = J.jutsu_element,
                 "jutsu_description" = J.jutsu_description,
@@ -113,12 +183,17 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 "last_edited" = J.last_edited,
                 "last_editor" = J.last_editor,
                 "pp_cost" = J.pp_cost,
-                "jutsu_requirements" = J.jutsu_requirements
-            ))
+                "jutsu_requirements" = J.jutsu_requirements,
+                "rulings" = saved_rulings
+            )
+            saved_jutsu += list(jutsu_data)
         
+        S.dir.Cut()
         S["jutsu"] = saved_jutsu
 
     proc/load_jutsu()
+        jutsu_list = list()
+        
         if(!fexists(savefile_path))
             return
             
@@ -130,6 +205,18 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             return
             
         for(var/list/jutsu_data in loaded_jutsu)
+            var/list/loaded_rulings = jutsu_data["rulings"] || list()
+            var/list/ruling_objects = list()
+            
+            for(var/list/ruling_data in loaded_rulings)
+                var/datum/ruling/R = new
+                R.text = ruling_data["text"]
+                R.author = ruling_data["author"]
+                R.date = ruling_data["date"]
+                R.last_editor = ruling_data["last_editor"]
+                R.last_edited = ruling_data["last_edited"]
+                ruling_objects += R
+            
             var/obj/jutsu/J = new(
                 jutsu_data["jutsu_name"],
                 jutsu_data["jutsu_element"], 
@@ -141,6 +228,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 jutsu_data["last_edited"],
                 jutsu_data["last_editor"]
             )
+            J.rulings = ruling_objects
             jutsu_list += J
 
 /owner
@@ -278,7 +366,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             
             html += "</table></body></html>"
             
-            usr << browse(html, "window=jutsu_list;size=600x400;can_close=1;can_resize=1")
+            usr << browse(html, "window=jutsu_list;size=520x680;can_close=1;can_resize=1")
 
         edit_jutsu()
             set name = "Edit Jutsu"
@@ -407,6 +495,106 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             GLOBAL_JUTSU_MANAGER.save_jutsu()
             
             world << "Jutsu '<a href='?src=\ref[new_jutsu];jutsu=[new_name]'>[new_name]</a>' has been updated!"
+
+        add_ruling()
+            set name = "Add Ruling"
+            set category = "Owner"
+            
+            var/list/jutsu_names = list()
+            for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
+                jutsu_names[J.jutsu_name] = J
+            
+            var/choice = input(usr, "Select jutsu to add ruling to:", "Add Ruling") as null|anything in jutsu_names
+            if(!choice)
+                return
+                
+            var/obj/jutsu/selected_jutsu = jutsu_names[choice]
+            
+            var/ruling_text = input(usr, "Enter the ruling:", "Add Ruling") as null|message
+            if(!ruling_text)
+                return
+            
+            var/datum/ruling/R = new(ruling_text, usr.ckey)
+            selected_jutsu.rulings += R
+            
+            GLOBAL_JUTSU_MANAGER.save_jutsu()
+            usr << "Added ruling to [selected_jutsu.jutsu_name]"
+
+        edit_ruling()
+            set name = "Edit Ruling"
+            set category = "Owner"
+            
+            var/list/jutsu_names = list()
+            for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
+                if(length(J.rulings))
+                    jutsu_names[J.jutsu_name] = J
+            
+            if(!length(jutsu_names))
+                usr << "No jutsu have rulings to edit!"
+                return
+                
+            var/choice = input(usr, "Select jutsu to edit ruling from:", "Edit Ruling") as null|anything in jutsu_names
+            if(!choice)
+                return
+                
+            var/obj/jutsu/selected_jutsu = jutsu_names[choice]
+            
+            var/list/ruling_texts = list()
+            var/i = 1
+            for(var/datum/ruling/R in selected_jutsu.rulings)
+                ruling_texts["[R.text] (by [R.author] on [R.date])"] = i++
+            
+            var/ruling_choice = input(usr, "Select ruling to edit:", "Edit Ruling") as null|anything in ruling_texts
+            if(!ruling_choice)
+                return
+                
+            var/index = ruling_texts[ruling_choice]
+            var/datum/ruling/R = selected_jutsu.rulings[index]
+            
+            var/new_text = input(usr, "Edit ruling:", "Edit Ruling", R.text) as null|message
+            if(!new_text)
+                return
+                
+            R.text = new_text
+            R.last_editor = usr.ckey
+            R.last_edited = time2text(world.realtime, "DD-MM-YYYY")
+            
+            GLOBAL_JUTSU_MANAGER.save_jutsu()
+            usr << "Edited ruling in [selected_jutsu.jutsu_name]"
+
+        delete_ruling()
+            set name = "Delete Ruling"
+            set category = "Owner"
+            
+            var/list/jutsu_names = list()
+            for(var/obj/jutsu/J in GLOBAL_JUTSU_MANAGER.jutsu_list)
+                if(length(J.rulings))
+                    jutsu_names[J.jutsu_name] = J
+            
+            if(!length(jutsu_names))
+                usr << "No jutsu have rulings to delete!"
+                return
+                
+            var/choice = input(usr, "Select jutsu to delete ruling from:", "Delete Ruling") as null|anything in jutsu_names
+            if(!choice)
+                return
+                
+            var/obj/jutsu/selected_jutsu = jutsu_names[choice]
+            
+            var/list/ruling_texts = list()
+            var/i = 1
+            for(var/datum/ruling/R in selected_jutsu.rulings)
+                ruling_texts["[R.text] (by [R.author] on [R.date])"] = i++
+            
+            var/ruling_choice = input(usr, "Select ruling to delete:", "Delete Ruling") as null|anything in ruling_texts
+            if(!ruling_choice)
+                return
+                
+            var/index = ruling_texts[ruling_choice]
+            selected_jutsu.rulings -= selected_jutsu.rulings[index]
+            
+            GLOBAL_JUTSU_MANAGER.save_jutsu()
+            usr << "Deleted ruling from [selected_jutsu.jutsu_name]"
 
 proc/get_jutsu_icon(jutsu_element)
     switch(jutsu_element)
