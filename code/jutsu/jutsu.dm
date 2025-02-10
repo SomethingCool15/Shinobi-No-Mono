@@ -166,6 +166,8 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
         for(var/obj/jutsu/J in jutsu_list)
             var/list/saved_rulings = list()
             for(var/datum/ruling/R in J.rulings)
+                //Package jutsu's rulings into a list of lists, saved_rulings)
+                //list(list("text" = "This jutsu acnnot be used underwater", "author" = "PassingSkies", etc etc), list("text" = "This jutsu can only be used by ninja", "author" = "PassingSkies", etc etc), etc etc)
                 saved_rulings += list(list(
                     "text" = R.text,
                     "author" = R.author,
@@ -208,17 +210,21 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             return
             
         for(var/list/jutsu_data in loaded_jutsu)
+            // Get rulings for this jutsu, or empty list if none
             var/list/loaded_rulings = jutsu_data["rulings"] || list()
+             // Create a list of ruling objects
             var/list/ruling_objects = list()
             
             for(var/list/ruling_data in loaded_rulings)
+                // Create a new ruling object
                 var/datum/ruling/R = new
+                // Populate new ruling object with data from ruling_data which is a list of lists (refer to 170)
                 R.text = ruling_data["text"]
                 R.author = ruling_data["author"]
                 R.date = ruling_data["date"]
                 R.last_editor = ruling_data["last_editor"]
                 R.last_edited = ruling_data["last_edited"]
-                ruling_objects += R
+                ruling_objects += R // Add the new ruling object to the list of ruling objects
             
             var/obj/jutsu/J = new(
                 jutsu_data["jutsu_name"],
