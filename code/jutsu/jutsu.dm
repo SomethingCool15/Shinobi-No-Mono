@@ -52,6 +52,7 @@
     proc/get_formatted_html(var/mob/viewer, var/mob/performer = null)
         var/display_html = jutsu_description
         
+        display_html = replacetext(display_html, "{jutsu_name}", jutsu_name)
         display_html = replacetext(display_html, "\[icon_url]", get_jutsu_icon(jutsu_element))
         display_html = replacetext(display_html, "{jutsuref}", "?src=\ref[src];rulings=1")
         display_html = replacetext(display_html, "{databook}", "<a href='?src=\ref[GLOBAL_DATABOOK];")
@@ -114,6 +115,7 @@
                 </tr>
             "}
         
+        rulings_html = replacetext(rulings_html, "{jutsu_name}", jutsu_name)
         rulings_html = replacetext(rulings_html, "<!--RULINGS-->", table_rows)
         return rulings_html
 
@@ -122,7 +124,7 @@
             usr << browse(get_formatted_html(usr, performer = usr), "window=jutsu_[jutsu_name];size=520x680;can_close=1;can_resize=0;border=0;is-naked=1")
         if(href_list["rulings"])
             var/html = get_rulings_html()
-            usr << browse(html, "window=jutsu_rulings;size=800x800;can_close=1;can_resize=0;border=0;is-naked=1")
+            usr << browse(html, "window=[jutsu_name]_rulings;size=800x800;can_close=1;can_resize=0;border=0;is-naked=1")
 
     DblClick()
         if(usr && usr.client)
