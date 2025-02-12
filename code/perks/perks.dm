@@ -280,22 +280,106 @@ datum/perktree
 		content = {"<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <title>Perks</title>
     <style>
         body {
-            background: #2d2d2d;
+            background: #F5E9DC;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .perk-container {
+            background: #f5e9dc; /* Scroll background */
+            border: 10px solid #636b2f; /* Outer border */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            width: 70%; /* Wider than tall */
+            max-width: 800px;
+            height: auto;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .perk-content {
+            background: #fffaf0; /* Inner parchment color */
+            border: 2px solid #636b2f;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            flex: 1;
+            position: relative;
+        }
+
+        .Title {
+            background: linear-gradient(#dbc3a3, #d2b48c);
+            padding: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d2d2d;
+            text-shadow: 1px 1px 2px black;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        .icon {
+            width: 60px; /* Adjust size */
+            height: 60px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #636b2f; /* Match border color */
+            border-radius: 5px;
+            background: #f5e9dc; /* Match outer container background */
+            padding: 5px;
+        }
+
+        .icon img {
+            width: 100%;
+            height: auto;
+            border: none;
+            border-radius: 0;
+        }
+
+        .perk-description {
+            font-size: 16px;
+            color: #2d2d2d;
+            margin-bottom: 10px;
+        }
+
+        .perk-notes {
+            font-size: 14px;
+            font-style: italic;
+            color: #636b2f;
         }
     </style>
 </head>
 <body>
-    <div class='perk-content'>
-        <div class='Title'>[perk_name]</div>
-        <div class='perk_desc'>Description: [perk_desc]</div>
-        <div class='perk_note'>Effect: [perk_note]</div>
+
+    <div class="perk-container">
+        <div class="icon">
+            <img src="https://i.ibb.co/fYQhFydC/No-Image-Selected.png" alt="Icon">
+        </div>
+        <div class="perk-content">
+            <div class="Title">[perk_name]</div>
+            <div class="perk_desc">Desc:[perk_desc]</div>
+            <div class="perk_note">Note:[perk_note]</div>
+        </div>
     </div>
+
 </body>
-</html>"}
+</html>
+        "}
     
 	DblClick()
 		if(usr && usr.client)
