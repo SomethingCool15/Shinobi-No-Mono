@@ -7,8 +7,8 @@ DIR: code code\databook code\databook\default_pages code\items code\jutsu code\m
 AUTO_FILE_DIR: ON
 MAP_ICON_TYPE: 0
 LAST_COMPILE_VERSION: 516.1654
-WINDOW: shinobi no mono.dm;shinobi no mono.dme;Konohagakure.dmm;code\admin.dm;code\skin.dmf;code\databook\databook.dm;code\jutsu\jutsu.dm
-FILE: code\jutsu\jutsu.dm
+WINDOW: code\obj.dm
+FILE: code\obj.dm
 MAP_INSTANCE_MODE: copy
 */
 // END_INTERNALS

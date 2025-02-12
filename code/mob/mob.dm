@@ -28,6 +28,12 @@ mob
         list/shinobi_kit = list()
         list/perk_list = list()
         list/jutsu_list = list()
+        datum/perktree/perktree
+    
+    Login()
+        ..()
+        perktree = new/datum/perktree(src)
+    
 
     New()
         ..()
@@ -78,6 +84,12 @@ mob
         statpanel("Jutsu")
         for(var/obj/jutsu/j in jutsu_list)
             stat("", j)
+    
+    Stat()
+        ..()
+        statpanel("Perks")
+        for(var/obj/perk/p in perk_list)
+            stat("", p)
 
     verb
         increaseStrength()
@@ -138,6 +150,22 @@ mob
         
         say(message as text)
             world << "<span style='color: red;'>[usr.name]: [message]</span>"
+        
+        openSkillTree()
+            winset(usr,"NewPerkTree","is-visible = true")
+            perktree.PageSort()
+            perktree.ShowSkillTree()
+        
+        NextPage()
+            set hidden = 1
+            perktree.NextPage1()
+            
+        
+        PreviousPage()
+            set hidden = 1
+            perktree.PreviousPage1()
+            
+
 
     Move()
         if(canMove)

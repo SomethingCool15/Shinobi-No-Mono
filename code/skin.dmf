@@ -1,22 +1,10 @@
 macro "macro"
 	elem 
-		name = "North+REP"
-		command = ".north"
-	elem 
-		name = "South+REP"
-		command = ".south"
-	elem 
-		name = "East+REP"
-		command = ".east"
-	elem 
-		name = "West+REP"
-		command = ".west"
+		name = "Center+REP"
+		command = ".center"
 	elem 
 		name = "Northeast+REP"
 		command = ".northeast"
-	elem 
-		name = "Northwest+REP"
-		command = ".northwest"
 	elem 
 		name = "Southeast+REP"
 		command = ".southeast"
@@ -24,11 +12,27 @@ macro "macro"
 		name = "Southwest+REP"
 		command = ".southwest"
 	elem 
-		name = "Center+REP"
-		command = ".center"
+		name = "Northwest+REP"
+		command = ".northwest"
+	elem 
+		name = "West+REP"
+		command = ".west"
+	elem 
+		name = "North+REP"
+		command = ".north"
+	elem 
+		name = "East+REP"
+		command = ".east"
+	elem 
+		name = "South+REP"
+		command = ".south"
 
 
 menu "menu"
+	elem 
+		name = "&File"
+		command = ""
+		saved-params = "is-checked"
 	elem 
 		name = "&Quit"
 		command = ".quit"
@@ -36,53 +40,154 @@ menu "menu"
 		saved-params = "is-checked"
 
 
-window "default"
-	elem "default"
+window "MainWindow"
+	elem "MainWindow"
 		type = MAIN
-		pos = 291,0
-		size = 1592x1037
+		pos = 0,0
+		size = 1902x986
 		anchor1 = -1,-1
 		anchor2 = -1,-1
-		background-color = none
 		is-default = true
+		drop-zone = true
 		saved-params = "pos;size;is-minimized;is-maximized"
+		title = "mainwindow"
+		statusbar = false
 		macro = "macro"
 		menu = "menu"
-		outer-size = 1608x1115
-		outer-pos = 291,0
-		inner-size = 1592x1056
-		inner-pos = 8,51
-		screen-size = 2560x1392
-	elem "input1"
-		type = INPUT
-		pos = 1200,612
-		size = 100x20
+	elem "output1"
+		type = OUTPUT
+		pos = 1496,432
+		size = 400x480
 		anchor1 = -1,-1
 		anchor2 = -1,-1
+		is-default = true
+		border = sunken
+		saved-params = "max-lines"
+	elem "info1"
+		type = INFO
+		pos = 1496,0
+		size = 396x432
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		saved-params = ""
+	elem "input1"
+		type = INPUT
+		pos = 1496,912
+		size = 392x121
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		border = sunken
 		saved-params = ""
 	elem "map1"
 		type = MAP
 		pos = 0,0
-		size = 1192x1056
+		size = 1496x1033
 		anchor1 = -1,-1
 		anchor2 = -1,-1
+		is-default = true
 		saved-params = "zoom;letterbox;zoom-mode"
 
-window "window1"
-	elem "window1"
+window "NewPerkTree"
+	elem "NewPerkTree"
 		type = MAIN
-		pos = 291,0
-		size = 640x480
+		pos = 384,0
+		size = 1000x750
 		anchor1 = -1,-1
 		anchor2 = -1,-1
 		background-color = none
 		is-visible = false
 		saved-params = "pos;size;is-minimized;is-maximized"
-		outer-size = 656x538
-		outer-pos = 291,0
-		inner-size = 640x499
-		inner-pos = 8,31
-		screen-size = 2560x1392
+		title = "Perk Tree"
+		statusbar = false
+		can-resize = false
+		outer-size = 1018x797
+		outer-pos = 384,0
+		inner-size = 1000x750
+		inner-pos = 9,38
+		screen-size = 1920x1080
+	elem "TreeBackground"
+		type = MAP
+		pos = 0,0
+		size = 1000x750
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		border = line
+		drop-zone = false
+		saved-params = "zoom;letterbox;zoom-mode"
+	elem "BackArrow"
+		type = BUTTON
+		pos = 29,653
+		size = 59x59
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		border = sunken
+		saved-params = "is-checked"
+		text = ""
+		image = 'icons\\InterfaceElements\\SmallBackArrow.png'
+		command = "PreviousPage"
+	elem "ForwardArrow"
+		type = BUTTON
+		pos = 904,653
+		size = 59x59
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		border = sunken
+		saved-params = "is-checked"
+		text = ""
+		image = 'icons\\InterfaceElements\\SmallForwardArrow.png'
+		command = "NextPage"
+	elem "TopPanelLine"
+		type = LABEL
+		pos = 0,0
+		size = 1000x19
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		saved-params = ""
+		text = ""
+		image = 'icons\\InterfaceElements\\GreenUiTopPanel.png'
+	elem "RightPanelLine"
+		type = LABEL
+		pos = 981,0
+		size = 19x750
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		saved-params = ""
+		text = ""
+		image = 'icons\\InterfaceElements\\GreenUiRightPanel.png'
+	elem "LeftPanelLine"
+		type = LABEL
+		pos = 0,0
+		size = 19x750
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		saved-params = ""
+		text = ""
+		image = 'icons\\InterfaceElements\\GreenUiLeftPanel.png'
+	elem "BottomPanelLine"
+		type = LABEL
+		pos = 0,733
+		size = 1000x19
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		background-color = none
+		saved-params = ""
+		text = ""
+		image = 'icons\\InterfaceElements\\GreenUiBottomPanel.png'
+
+window "window1"
+	elem "window1"
+		type = MAIN
+		pos = 384,0
+		size = 640x480
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		is-visible = false
+		saved-params = "pos;size;is-minimized;is-maximized"
 	elem "browser1"
 		type = BROWSER
 		pos = 0,0
