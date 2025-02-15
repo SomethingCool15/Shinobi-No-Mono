@@ -55,7 +55,7 @@
         display_html = replacetext(display_html, "{jutsu_name}", jutsu_name)
         display_html = replacetext(display_html, "\[icon_url]", get_jutsu_icon(jutsu_element))
         display_html = replacetext(display_html, "{jutsuref}", "?src=\ref[src];rulings=1")
-        display_html = replacetext(display_html, "{databook}", "<a href='?src=\ref[GLOBAL_DATABOOK];")
+        display_html = replacetext(display_html, "{databook}", "?src=\ref[GLOBAL_DATABOOK];")
         
         if(usr && usr.client)
             var/insert_position = findtext(display_html, "<!--SECTIONS-->")
@@ -256,6 +256,9 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
             
             var/jutsu_html = input(usr, "Enter the complete HTML template (use <!--SECTIONS--> where extra sections should appear):", "Jutsu HTML") as null|message
             if(!jutsu_html) return
+
+            var/jutsu_icon = input(usr, "Select an icon for this jutsu", "Jutsu Icon") as file|null
+            if(!jutsu_icon) return
 
             var/pp_cost = input(usr, "Enter the PP cost for this jutsu:", "PP Cost") as null|num
             if(isnull(pp_cost)) return
