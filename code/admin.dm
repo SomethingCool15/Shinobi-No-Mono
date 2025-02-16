@@ -2,14 +2,14 @@ var/list/admin1 = list()
 var/list/admin2 = list()
 var/list/admin3 = list()
 var/list/admin4 = list()
-var/list/admin5 = list("passingskies")
+var/list/admin5 = list("PassingSkies")
 var/list/owners = list("gucci3rdleg")
 var/list/village_ranks = list("Academy Student", "Genin", "Chunin", "Jounin", "Special Jounin", "Hokage", "Kazekage", "Mizukage")
 var/list/criminal_ranks = list("Akatsuki", "Sound Five")
 
 proc
-    admin_check(ckey)
-        if(ckey in admin5)
+    admin_check(key)
+        if(key in admin5)
             usr.verbs += typesof(/admin5/verb, /owner/verb)
 
 admin5

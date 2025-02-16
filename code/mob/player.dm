@@ -3,7 +3,7 @@ player
 	icon = 'icons/base/Base_Pale.dmi'
 
 	Login()
-		..()
+		..()	
 		playerList += src
 		var/datum/rank/R = new /datum/rank/mizukage()
 		R.apply_rank(src)
