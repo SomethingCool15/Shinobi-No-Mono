@@ -35,6 +35,14 @@ admin5
                 var/datum/rank/new_rank = new rank_type()
                 new_rank.apply_rank(P)
                 usr << "[P] has been set to rank [new_rank.rank_name]"
+                
+                if(new_rank.rank_name == "Genin")
+                    spawn(1)
+                        var/obj/item/clothing/headband/H = new()
+                        if(P.AddToInventory(H))
+                            if(P.village && H.village_icon_states["[P.village]"])
+                                H.icon_state = H.village_icon_states["[P.village]"]
+                            P << "You received your village headband!"
         
         set_village(player/P as mob in world, village as null|anything in GLOBAL_VILLAGE_MANAGER.villages)
             set category = "Admin"
@@ -42,16 +50,22 @@ admin5
             if(!village) return
             
             var/datum/village/V = village
-            if(istype(P.village, /datum/village/missing))
-                V.add_player(P)
-                P << "You are now a part of [V.name]!"
-                return
             
-            if(P.village && istype(P.village, /datum/village))
+            if(P.village)
                 var/datum/village/old_village = P.village
                 old_village.remove_player(P)
+            
             V.add_player(P)
-            P << "You are now a part of [V.name]!"
+            
+            if(V.name == "Missing")
+                if(P.rank)
+                    P.verbs -= P.rank.rank_verbs
+                    P.rank = null
+                var/datum/rank/missing/M = new()
+                M.apply_rank(P)
+                P << "You are now a missing ninja!"
+            else
+                P << "You are now a part of [V.name]!"
         
         remove_from_village(player/P as mob in world)
             set category = "Admin"
@@ -92,3 +106,16 @@ admin5
             set name = "Decrease SP Cap"
             P.sp_cap -= amount
             P << "Your SP cap has been decreased by [amount]!"
+
+        give_item(player/P as mob in world, item_type as null|anything in typesof(/obj/item))
+            set category = "Admin"
+            set name = "Give Item"
+            if(!item_type) return
+            
+            var/obj/item/I = new item_type()
+            if(P.AddToInventory(I))
+                usr << "Gave [P] a [I.name]"
+                P << "You received a [I.name]!"
+            else
+                usr << "[P]'s inventory is full!"
+                del(I)

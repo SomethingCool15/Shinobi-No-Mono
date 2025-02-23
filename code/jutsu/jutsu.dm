@@ -130,6 +130,9 @@
         if(usr && usr.client)
             show_jutsu(src.jutsu_name)
 
+    Click()
+        usr << browse(get_formatted_html(usr, performer = usr), "window=jutsu_[jutsu_name];size=520x680;can_close=1;can_resize=0;border=0;is-naked=1")
+
 /mob/verb/give_jutsu()
     set name = "Give Jutsu"
     set category = "IC"

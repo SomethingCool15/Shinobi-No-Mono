@@ -3,15 +3,19 @@ player
 	icon = 'icons/base/Base_Pale.dmi'
 
 	Login()
-		..()	
+		..()
 		playerList += src
 		var/datum/rank/R = new /datum/rank/mizukage()
 		R.apply_rank(src)
 		var/datum/village/V = GLOBAL_VILLAGE_MANAGER.villages[2]
 		V.add_player(src)
-		admin_check(src.ckey)
-		
-		// Add test players if this is the first login
+		admin_check(src.key)
+		var/obj/item/clothing/shirt/S = new()
+		var/obj/item/melee_weapons/katana/K = new()
+		var/obj/item/throwing_weapon/shuriken/SH = new()
+		src.AddToInventory(S)
+		src.AddToInventory(K)
+		src.AddToInventory(SH)
 		if(playerList.len == 1)
 			spawn_test_players()
 
