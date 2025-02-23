@@ -2,13 +2,13 @@
 /*
 MAP_PLANE_MASTERS: 
 MAP_ZOOM: 1.000
-LAST_COMPILE_TIME: 1738629784
-DIR: code code\databook code\databook\default_pages code\items code\jutsu code\mob code\perks icons\base icons\turf 
+LAST_COMPILE_TIME: 1740273836
+DIR: code code\databook code\databook\default_pages code\items code\jutsu code\mob code\perks icons icons\Clothing icons\turf 
 AUTO_FILE_DIR: ON
 MAP_ICON_TYPE: 0
 LAST_COMPILE_VERSION: 516.1654
-WINDOW: shinobi no mono.dm;shinobi no mono.dme;Konohagakure.dmm;code\admin.dm;code\skin.dmf;code\databook\databook.dm;code\jutsu\jutsu.dm
-FILE: code\jutsu\jutsu.dm
+WINDOW: icons\Clothing\sakuraheadband.dmi;code\skin.dmf;code\databook\default_pages\default_pages.dm;icons\Clothing\Headband.dmi
+FILE: icons\Clothing\Headband.dmi
 MAP_INSTANCE_MODE: copy
 */
 // END_INTERNALS

@@ -24,7 +24,11 @@
         else
             M.sp_cap = sp_cap
         M.verbs += rank_verbs
-        M << "You have been promoted to [rank_name]!"
+
+        if(rank_name == "Missing")
+            M << "You are now a criminal!"
+        else
+            M << "You have been promoted to [rank_name]!"
 
 /datum/rank/civilian
     New()
@@ -37,6 +41,10 @@
 /datum/rank/genin
     New()
         ..("Genin", 115)
+
+/datum/rank/missing
+    New()
+        ..("Missing", 115)
 
 /datum/rank/chunin
     New()

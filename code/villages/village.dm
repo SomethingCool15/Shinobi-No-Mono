@@ -47,7 +47,7 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
         kiri.economy = 250000
         villages += kiri
         
-        var/datum/village/missing/M = new()
+        var/datum/village/M = new()
         M.name = "Missing"
         M.economy = 0
         villages += M
@@ -93,9 +93,7 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
             player.verbs -= SR.sub_rank_verbs
             player.sub_ranks -= SR
         
-        var/datum/village/missing/M = new()
-        M.add_player(player)
-        player.rank = null
+        player.village = null  // Just clear the village reference
         player.sp_cap = old_cap
 
     proc/increase_economy(amount)
@@ -150,22 +148,3 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
     ..()
     GLOBAL_VILLAGE_MANAGER = new()
     GLOBAL_VILLAGE_MANAGER.load_villages()
-
-
-/datum/village/missing
-    New()
-        ..()
-        economy = 0
-        enabled = TRUE
-
-    increase_economy()
-        return
-    
-    decrease_economy()
-        return
-
-    remove_player(mob/player)
-        usr << "You are not part of any village!"
-    
-    // calculate_tax()
-    //     return 0

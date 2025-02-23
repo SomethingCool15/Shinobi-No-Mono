@@ -1,5 +1,6 @@
 mob
     step_size = 8
+    icon_state = ""
     var
         canMove = TRUE
         strength = 5
@@ -43,6 +44,7 @@ mob
         list/perk_list = list()
         list/jutsu_list = list()
         list/tasks = list()
+        list/worn_items = list()
 
     New()
         ..()
@@ -117,7 +119,7 @@ mob
             return "S+"
 
     proc/can_spend_points()
-        if(istype(village, /datum/village/missing))
+        if(village.name == "Missing")
             return get_total_points_spent() < sp_cap
         if(!rank) return FALSE
         return get_total_points_spent() < sp_cap
@@ -136,7 +138,7 @@ mob
         stat("Stat Points", "[stat_points]")
         stat("PP", "[unspent_pp]/[total_pp]")
         stat("SP", "[stat_points]/[sp_cap]")
-        if(istype(village, /datum/village/missing))
+        if(village.name == "Missing")
             stat("Rank", "Criminal ([getOverallGrade()])")
         else if(rank.rank_name == "Hokage" || rank.rank_name == "Hokage Assistant" || rank.rank_name == "Mizukage" || rank.rank_name == "Mizukage Assistant")
             stat("Rank", "You are the [rank.rank_name] ([getOverallGrade()]) of [village.name]")
@@ -147,6 +149,23 @@ mob
             sub_rank_names += sub_rank.rank_name
         if(sub_rank_names.len > 0)
             stat("Sub-Ranks", "[jointext(sub_rank_names, ", ")]")
+
+        statpanel("Jutsu")
+        stat("Jutsu", "[jutsu_list.len]")
+        if(jutsu_list.len > 0)
+            for(var/obj/jutsu/J in jutsu_list)
+                stat(null, J)
+            
+        statpanel("Inventory")
+        stat("Slots Used", "[inventory.len]/[inventory_max_slots]")
+        if(inventory.len > 0)
+            for(var/obj/item/I in inventory)
+                stat(I)
+        stat("----------------------------------------------")
+        stat("Slots Used", "[shinobi_kit.len]/[shinobi_kit_max_slots]")
+        if(shinobi_kit.len > 0)
+            for(var/obj/item/I in shinobi_kit)
+                stat(I)
 
     verb
         increaseStrength()
@@ -233,7 +252,7 @@ mob
             set category = "Village"
             set name = "Leave Village"
             
-            if(!village || istype(village, /datum/village/missing))
+            if(usr.village.name == "Missing")
                 usr << "You are not part of any village!"
                 return
             
