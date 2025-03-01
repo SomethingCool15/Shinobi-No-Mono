@@ -1,29 +1,3 @@
-var/global/datum/item_manager/GLOBAL_ITEM_MANAGER
-
-/world/New()
-    ..()
-    GLOBAL_ITEM_MANAGER = new()
-    GLOBAL_ITEM_MANAGER.save_item_databook()
-
-/datum/item_manager
-    var
-        list/item_databook_pages = list()
-        savefile_path = "data/item_databook.sav"
-
-    New()
-        ..()
-        load_item_databook()
-
-    proc/save_item_databook()
-        var/savefile/S = new(savefile_path)
-        S["item_databook_pages"] = item_databook_pages
-
-    proc/load_item_databook()
-        if(!fexists(savefile_path))
-            return
-        var/savefile/S = new(savefile_path)
-        S["item_databook_pages"] >> item_databook_pages
-
 /owner
     verb
         assign_item_databook()

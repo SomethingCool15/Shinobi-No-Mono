@@ -1,5 +1,3 @@
-var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
-
 /datum/village_manager
     var
         list/villages = list()
@@ -59,6 +57,7 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
         name
         list/players = list()
         list/clans = list()
+        list/squads = list()
         treasury = 15000
         economy
         list/jutsu_library = list()
@@ -132,6 +131,9 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
     proc/get_population()
         return length(players)
 
+    proc/get_squads()
+        return length(squads)
+
 /obj/village
     var
         datum/village/data
@@ -143,8 +145,3 @@ var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
     //            T.y >= range["y1"] && T.y <= range["y2"])
     //             return TRUE
     //     return FALSE
-
-/world/New()
-    ..()
-    GLOBAL_VILLAGE_MANAGER = new()
-    GLOBAL_VILLAGE_MANAGER.load_villages()

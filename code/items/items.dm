@@ -311,7 +311,7 @@
                 usr << "[usr] brings the storm through their twin fangs, <a href='?src=\ref[src];item=[name]'>[name]</a>!"
             else
                 usr << "You examine the [name]."
-
+                
 /obj/item/melee_weapons/shibuki
     name = "Shibuki"
 

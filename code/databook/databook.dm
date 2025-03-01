@@ -1,9 +1,3 @@
-var/global/datum/databook/GLOBAL_DATABOOK
-
-/world/New()
-    ..()
-    GLOBAL_DATABOOK = new()
-
 /mob/verb/view_databook()
     set name = "View Databook"
     set category = "IC"

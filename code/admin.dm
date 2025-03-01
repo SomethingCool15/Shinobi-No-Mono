@@ -119,3 +119,49 @@ admin5
             else
                 usr << "[P]'s inventory is full!"
                 del(I)
+
+        view_all_squads()
+            set category = "Admin"
+            set name = "View All Squads"
+            
+            if(!GLOBAL_SQUAD_MANAGER || !GLOBAL_SQUAD_MANAGER.squads.len)
+                usr << "There are no squads currently active."
+                return
+                
+            var/info = "All Active Squads:\n"
+            for(var/datum/squad/S in GLOBAL_SQUAD_MANAGER.squads)
+                var/village_name = S.village ? S.village.name : "No Village"
+                info += "Squad: [S.squad_name] ([S.squad_composition]) - Village: [village_name]\n"
+                info += "  Leader: [S.leader]\n"
+                info += "  Members ([S.members.len]/[S.max_members]):\n"
+                for(var/mob/M in S.members)
+                    info += "    - [M] ([M.rank.rank_name])\n"
+                info += "\n"
+            usr << info
+            
+        summon_squad(datum/squad/S as null|anything in GLOBAL_SQUAD_MANAGER.squads)
+            set category = "Admin"
+            set name = "Summon Squad"
+            
+            if(!S)
+                return
+                
+            for(var/mob/M in S.members)
+                M.loc = usr.loc
+                M << "You have been summoned by an admin."
+                
+            usr << "Squad [S.squad_name] has been summoned to your location."
+            
+        disband_squad(datum/squad/S as null|anything in GLOBAL_SQUAD_MANAGER.squads)
+            set category = "Admin"
+            set name = "Disband Squad"
+            
+            if(!S)
+                return
+                
+            var/confirm = alert("Are you sure you want to disband squad [S.squad_name]?", "Confirm Disband", "Yes", "No")
+            if(confirm == "No")
+                return
+                
+            S.disbandSquad()
+            usr << "Squad [S.squad_name] has been disbanded."
