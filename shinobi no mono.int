@@ -3,12 +3,12 @@
 MAP_PLANE_MASTERS: 
 MAP_ZOOM: 1.000
 LAST_COMPILE_TIME: 1738629784
-DIR: code code\databook code\databook\default_pages code\items code\jutsu code\mob code\perks icons\base icons\turf 
+DIR: code code\databook code\databook\default_pages code\items code\jutsu code\mob code\perks icons icons\base icons\PerkIcons icons\perktree icons\turf 
 AUTO_FILE_DIR: ON
 MAP_ICON_TYPE: 0
 LAST_COMPILE_VERSION: 516.1654
-WINDOW: code\obj.dm
-FILE: code\obj.dm
+WINDOW: icons\PerkIcons\KatonTree.dmi
+FILE: icons\PerkIcons\KatonTree.dmi
 MAP_INSTANCE_MODE: copy
 */
 // END_INTERNALS

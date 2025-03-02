@@ -30,6 +30,9 @@ obj
 	InterfaceIcons
 		alpha = 0
 		icon = 'icons/perktree/InterfaceIcons.dmi'
+		MouseEntered()
+			usr << "YO DAWG Hovering"
+			
 
 		BlankNode
 			icon_state = "BlankNode"

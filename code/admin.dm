@@ -2,7 +2,7 @@ var/list/admin1 = list()
 var/list/admin2 = list()
 var/list/admin3 = list()
 var/list/admin4 = list()
-var/list/admin5 = list("passingskies")
+var/list/admin5 = list("Passingskies", "Deliveryshinobi")
 var/list/owners = list("gucci3rdleg")
 var/list/village_ranks = list("Academy Student", "Genin", "Chunin", "Jounin", "Special Jounin", "Hokage", "Kazekage", "Mizukage")
 var/list/criminal_ranks = list("Akatsuki", "Sound Five")
@@ -11,9 +11,12 @@ var/list/rank_objects = list(
 )
 
 proc
-    admin_check(ckey)
-        if(ckey in admin5)
+    admin_check()
+        if(usr.client.key in admin5)
+            usr << "Welcome, [usr.client.key], you're an admin."
             usr.verbs += typesof(/admin5/verb, /owner/verb)
+        else return
+            
 
 admin5
     verb

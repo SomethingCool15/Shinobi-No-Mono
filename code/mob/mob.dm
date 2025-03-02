@@ -23,6 +23,7 @@ mob
         grade = "E"
         village = ""
         age = ""
+        activationquote = ""
         list/squad = list()
         list/inventory = list()
         list/shinobi_kit = list()
