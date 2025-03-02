@@ -40,6 +40,7 @@
 #include "code\items\item_manager.dm"
 #include "code\items\items.dm"
 #include "code\jutsu\jutsu.dm"
+#include "code\missions\missions.dm"
 #include "code\mob\inventory.dm"
 #include "code\mob\mob.dm"
 #include "code\mob\player.dm"
@@ -50,5 +51,6 @@
 #include "code\villages\Konohagakure.dm"
 #include "code\villages\Sunagakure.dm"
 #include "code\villages\village.dm"
+#include "code\globals.dm"
 // END_INCLUDE
 

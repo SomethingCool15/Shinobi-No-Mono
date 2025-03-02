@@ -147,8 +147,6 @@
         jutsu_list += J
         src << "You learned [J.jutsu_name]!"
 
-var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
-
 /world/New()
     ..()
     GLOBAL_JUTSU_MANAGER = new()

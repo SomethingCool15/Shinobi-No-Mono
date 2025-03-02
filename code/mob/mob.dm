@@ -124,6 +124,9 @@ mob
         if(!rank) return FALSE
         return get_total_points_spent() < sp_cap
 
+    proc/calc_elo()
+        var/elo = c_rank_missions_completed * 100 + b_rank_missions_completed * 200 + a_rank_missions_completed * 300 + s_rank_missions_completed * 400
+
     Stat()
         ..()
         statpanel("Stats")
@@ -247,25 +250,6 @@ mob
         
         say(message as text)
             world << "<span style='color: red;'>[usr.name]: [message]</span>"
-
-        leave_village()
-            set category = "Village"
-            set name = "Leave Village"
-            
-            if(usr.village.name == "Missing")
-                usr << "You are not part of any village!"
-                return
-            
-            if(rank.rank_name == "Hokage" || rank.rank_name == "Mizukage")
-                usr << "You cannot abandon your position as [rank.rank_name]!"
-                return
-            
-            switch(alert("Are you sure you want to abandon your village? This action cannot be undone!",,"Yes","No"))
-                if("No")
-                    return
-                if("Yes")
-                    usr << "You have abandoned your village and become a missing-nin!"
-                    village.remove_player(usr)
 
     Move()
         if(canMove)

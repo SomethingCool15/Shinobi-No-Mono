@@ -34,6 +34,12 @@
     New()
         ..("Civilian", 45)
 
+/datum/rank/missing
+    New()
+        ..("Missing", 115)
+        rank_verbs = list(
+        )
+
 /datum/rank/academy_student
     New()
         ..("Academy Student", 80)
@@ -41,16 +47,14 @@
 /datum/rank/genin
     New()
         ..("Genin", 115)
-
-/datum/rank/missing
-    New()
-        ..("Missing", 115)
+        rank_verbs = list(
+        )
 
 /datum/rank/chunin
     New()
         ..("Chunin", 150)
         rank_verbs = list(
-            /datum/rank/chunin/verb/promote_to_academy_student
+            /datum/rank/chunin/verb/promote_to_academy_student,
         )
 
     verb/promote_to_academy_student()
@@ -67,14 +71,29 @@
 
 /datum/rank/tokubetsu_jonin
     New()
-        ..("Tokubetsu Jōnin", 185) 
+        ..("Tokubetsu Jonin", 185)
+        rank_verbs = list(
+            /datum/rank/chunin/verb/promote_to_academy_student,
+        )
+
+    verb/promote_to_academy_student()
+        set category = "Chunin"
+        set name = "Promote to Academy Student"
+        var/list/choices = list()
+        for(var/player/P in oview(20))
+            if(P.village == usr.village && istype(P.rank, /datum/rank/civilian))
+                choices += P
+        var/player/P = input("Choose a civilian to promote") as null|anything in choices
+        if(!P) return
+        var/datum/rank/R = new /datum/rank/academy_student()
+        R.apply_rank(P)
 
 /datum/rank/jonin
     New()
-        ..("Jōnin", 220)
+        ..("Jonin", 220)
         rank_verbs = list(
             /datum/rank/jonin/verb/promote_to_academy_student,
-            /datum/rank/jonin/verb/promote_to_genin
+            /datum/rank/jonin/verb/promote_to_genin,
         )
 
     verb/promote_to_academy_student()
@@ -127,10 +146,113 @@
 /datum/rank/hancho_jonin
     New()
         ..("Jōnin Hanchō", 250)
+        rank_verbs = list(
+            /datum/rank/jonin/verb/promote_to_academy_student,
+            /datum/rank/jonin/verb/promote_to_genin,
+        )
+
+    verb/promote_to_academy_student()
+        set category = "Jonin"
+        set name = "Promote to Academy Student"
+        var/list/choices = list()
+        for(var/player/P in oview(20))
+            if(P.village == usr.village && istype(P.rank, /datum/rank/civilian))
+                choices += P
+        var/player/P = input("Choose a civilian to promote") as null|anything in choices
+        if(!P) return
+        var/datum/rank/R = new /datum/rank/academy_student()
+        R.apply_rank(P)
+
+    
+    verb/promote_to_genin()
+        set category = "Jonin"
+        set name = "Promote to Genin"
+        var/list/choices = list()
+        for(var/player/P in oview(20))
+            if(P.village == usr.village && istype(P.rank, /datum/rank/academy_student))
+                choices += P
+        var/player/P = input("Choose an academy student to promote") as null|anything in choices
+        if(!P) return
+
+        var/list/required_jutsu = list(
+            "Bunshin no Jutsu",
+            "Henge no Jutsu",
+            "Kawarimi no Jutsu"
+        )
+        
+        var/missing_jutsu = FALSE
+        for(var/jutsu_name in required_jutsu)
+            var/has_jutsu = FALSE
+            for(var/obj/jutsu/J in P.jutsu_list)
+                if(J.name == jutsu_name)
+                    has_jutsu = TRUE
+                    break
+            if(!has_jutsu)
+                usr << "[P] doesn't know [jutsu_name]!"
+                missing_jutsu = TRUE
+            
+        if(missing_jutsu)
+            return
+
+        var/datum/rank/R = new /datum/rank/genin()
+        R.apply_rank(P)
+        src << "You have promoted [P] to Genin!"
 
 /datum/rank/sannin
     New()
         ..("Sannin", 280)
+        rank_verbs = list(
+            /datum/rank/jonin/verb/promote_to_academy_student,
+            /datum/rank/jonin/verb/promote_to_genin,
+        )
+    
+
+    verb/promote_to_academy_student()
+        set category = "Jonin"
+        set name = "Promote to Academy Student"
+        var/list/choices = list()
+        for(var/player/P in oview(20))
+            if(P.village == usr.village && istype(P.rank, /datum/rank/civilian))
+                choices += P
+        var/player/P = input("Choose a civilian to promote") as null|anything in choices
+        if(!P) return
+        var/datum/rank/R = new /datum/rank/academy_student()
+        R.apply_rank(P)
+
+    
+    verb/promote_to_genin()
+        set category = "Jonin"
+        set name = "Promote to Genin"
+        var/list/choices = list()
+        for(var/player/P in oview(20))
+            if(P.village == usr.village && istype(P.rank, /datum/rank/academy_student))
+                choices += P
+        var/player/P = input("Choose an academy student to promote") as null|anything in choices
+        if(!P) return
+
+        var/list/required_jutsu = list(
+            "Bunshin no Jutsu",
+            "Henge no Jutsu",
+            "Kawarimi no Jutsu"
+        )
+        
+        var/missing_jutsu = FALSE
+        for(var/jutsu_name in required_jutsu)
+            var/has_jutsu = FALSE
+            for(var/obj/jutsu/J in P.jutsu_list)
+                if(J.name == jutsu_name)
+                    has_jutsu = TRUE
+                    break
+            if(!has_jutsu)
+                usr << "[P] doesn't know [jutsu_name]!"
+                missing_jutsu = TRUE
+            
+        if(missing_jutsu)
+            return
+
+        var/datum/rank/R = new /datum/rank/genin()
+        R.apply_rank(P)
+        src << "You have promoted [P] to Genin!"
 
 /datum/rank/hokage // Maximum tiles distance for promotions
     New()

@@ -5,7 +5,7 @@ player
 	Login()
 		..()
 		playerList += src
-		var/datum/rank/R = new /datum/rank/mizukage()
+		var/datum/rank/R = new /datum/rank/genin()
 		R.apply_rank(src)
 		var/datum/village/V = GLOBAL_VILLAGE_MANAGER.villages[2]
 		V.add_player(src)
