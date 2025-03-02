@@ -6,10 +6,14 @@
         list/tasks = list()
         list/requirements = list()
         preserves_old_cap = FALSE 
+        power_level = 0
+        criminal_grade = ""
 
-    New(name, cap)
+    New(name, cap, power_level, criminal_grade = "")
         rank_name = name
         sp_cap = cap
+        src.power_level = power_level
+        src.criminal_grade = criminal_grade
 
     proc/apply_rank(mob/M)
         if(!M) return
@@ -26,33 +30,82 @@
         M.verbs += rank_verbs
 
         if(rank_name == "Missing")
-            M << "You are now a criminal!"
+            if(criminal_grade && criminal_grade != "")
+                M << "You are now a [criminal_grade]-Rank Criminal!"
+            else
+                M << "You are now a criminal!"
         else
             M << "You have been promoted to [rank_name]!"
 
 /datum/rank/civilian
     New()
-        ..("Civilian", 45)
+        ..("Civilian", 45, 0)
 
 /datum/rank/missing
     New()
-        ..("Missing", 115)
+        ..("Missing", 0, 0)
         rank_verbs = list(
         )
 
+    proc/get_criminal_rank(mob/M)
+        if(!M) return new /datum/rank/missing/d_rank()  // Return D-rank object instead of just "D" string
+        
+        var/total_spent = M.get_total_points_spent()
+        
+        if(total_spent <= 115)
+            return new /datum/rank/missing/d_rank()
+        else if(total_spent <= 150)
+            return new /datum/rank/missing/c_rank()
+        else if(total_spent <= 185)
+            return new /datum/rank/missing/b_rank()
+        else if(total_spent <= 220)
+            return new /datum/rank/missing/a_rank()
+        else
+            return new /datum/rank/missing/s_rank()
+
+/datum/rank/missing/d_rank
+    New()
+        ..("Missing", 115, 2)  // Don't pass criminal_grade
+        criminal_grade = "D"   // Set it directly
+        rank_verbs = list()
+
+/datum/rank/missing/c_rank
+    New()
+        ..("Missing", 150, 3, "C")  // Power level 3 = Chunin equivalent
+        criminal_grade = "C"  // Explicitly set the criminal grade
+        rank_verbs = list()
+
+/datum/rank/missing/b_rank
+    New()
+        ..("Missing", 185, 4, "B")  // Power level 4 = TJ equivalent
+        criminal_grade = "B"  // Explicitly set the criminal grade
+        rank_verbs = list()
+
+/datum/rank/missing/a_rank
+    New()
+        ..("Missing", 220, 5, "A")  // Power level 5 = Jonin equivalent
+        criminal_grade = "A"  // Explicitly set the criminal grade
+        rank_verbs = list()
+
+/datum/rank/missing/s_rank
+    New()
+        ..("Missing", 280, 7, "S")  // Power level 7 = Sannin/Hancho equivalent
+        criminal_grade = "S"  // Explicitly set the criminal grade
+        rank_verbs = list()
+
 /datum/rank/academy_student
     New()
-        ..("Academy Student", 80)
+        ..("Academy Student", 80, 1)
 
 /datum/rank/genin
     New()
-        ..("Genin", 115)
+        ..("Genin", 115, 2)
         rank_verbs = list(
         )
 
 /datum/rank/chunin
     New()
-        ..("Chunin", 150)
+        ..("Chunin", 150, 3)
         rank_verbs = list(
             /datum/rank/chunin/verb/promote_to_academy_student,
         )
@@ -71,7 +124,7 @@
 
 /datum/rank/tokubetsu_jonin
     New()
-        ..("Tokubetsu Jonin", 185)
+        ..("Tokubetsu Jonin", 185, 4)
         rank_verbs = list(
             /datum/rank/chunin/verb/promote_to_academy_student,
         )
@@ -90,7 +143,7 @@
 
 /datum/rank/jonin
     New()
-        ..("Jonin", 220)
+        ..("Jonin", 220, 5)
         rank_verbs = list(
             /datum/rank/jonin/verb/promote_to_academy_student,
             /datum/rank/jonin/verb/promote_to_genin,
@@ -145,7 +198,7 @@
 
 /datum/rank/hancho_jonin
     New()
-        ..("Jōnin Hanchō", 250)
+        ..("Jōnin Hanchō", 250, 6)
         rank_verbs = list(
             /datum/rank/jonin/verb/promote_to_academy_student,
             /datum/rank/jonin/verb/promote_to_genin,
@@ -200,7 +253,7 @@
 
 /datum/rank/sannin
     New()
-        ..("Sannin", 280)
+        ..("Sannin", 280, 7)
         rank_verbs = list(
             /datum/rank/jonin/verb/promote_to_academy_student,
             /datum/rank/jonin/verb/promote_to_genin,
@@ -256,7 +309,7 @@
 
 /datum/rank/hokage // Maximum tiles distance for promotions
     New()
-        ..("Hokage", 0)
+        ..("Hokage", 0, 8)
         preserves_old_cap = TRUE
         rank_verbs = list(
             /datum/rank/hokage/verb/declare_war,
@@ -553,22 +606,25 @@
     verb/exile(player/P as mob in usr.village.players)
         set category = "Hokage"
         set name = "Exile"
+        
         if(!P)
             return
         if(P == usr)
             usr << "You cannot exile yourself!"
             return
-        var/datum/village/V = P.village
-        V.remove_player(P)
-        usr << "You have exiled [P]!"
-    
+            
+        if(make_missing_ninja(P))
+            usr << "You have exiled [P]!"
+        else
+            usr << "Failed to exile [P]."
+
     verb/assign_official_team()
         set category = "Hokage"
         set name = "Assign Official Team"
 
 /datum/rank/mizukage
     New()
-        ..("Mizukage", 300)
+        ..("Mizukage", 300, 8)
         preserves_old_cap = TRUE
         rank_verbs = list(
             /datum/rank/mizukage/verb/declare_war,
@@ -903,14 +959,15 @@
     verb/exile(player/P as mob in usr.village.players)
         set category = "Mizukage"
         set name = "Exile"
+        
         if(!P)
             return
         if(P == usr)
             usr << "You cannot exile yourself!"
             return
-        var/datum/village/V = P.village
-        V.remove_player(P)
-        usr << "You have exiled [P]!"
+            
+        if(make_missing_ninja(P))
+            usr << "You have exiled [P]! They are now a [P.rank.criminal_grade]-Grade Criminal!"
 
     verb/assign_official_team()
         set category = "Mizukage"

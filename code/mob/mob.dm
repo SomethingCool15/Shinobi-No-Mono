@@ -141,8 +141,9 @@ mob
         stat("Stat Points", "[stat_points]")
         stat("PP", "[unspent_pp]/[total_pp]")
         stat("SP", "[stat_points]/[sp_cap]")
+        stat("total spent", "[get_total_points_spent()]")
         if(village.name == "Missing")
-            stat("Rank", "Criminal ([getOverallGrade()])")
+            stat("Rank", "[rank.criminal_grade]-Grade Criminal ([getOverallGrade()])")
         else if(rank.rank_name == "Hokage" || rank.rank_name == "Hokage Assistant" || rank.rank_name == "Mizukage" || rank.rank_name == "Mizukage Assistant")
             stat("Rank", "You are the [rank.rank_name] ([getOverallGrade()]) of [village.name]")
         else
