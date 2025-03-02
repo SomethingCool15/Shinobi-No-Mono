@@ -43,7 +43,7 @@
 
 /datum/rank/missing
     New()
-        ..("Missing", 115, 0)
+        ..("Missing", 0, 0)
         rank_verbs = list(
         )
 
@@ -52,13 +52,13 @@
         
         var/total_spent = M.get_total_points_spent()
         
-        if(total_spent <= 60)
+        if(total_spent <= 115)
             return new /datum/rank/missing/d_rank()
-        else if(total_spent <= 105)
-            return new /datum/rank/missing/c_rank()
         else if(total_spent <= 150)
+            return new /datum/rank/missing/c_rank()
+        else if(total_spent <= 185)
             return new /datum/rank/missing/b_rank()
-        else if(total_spent <= 195)
+        else if(total_spent <= 220)
             return new /datum/rank/missing/a_rank()
         else
             return new /datum/rank/missing/s_rank()
@@ -89,7 +89,7 @@
 
 /datum/rank/missing/s_rank
     New()
-        ..("Missing", 280, 7, "S")  // Power level 7 = Sannin equivalent
+        ..("Missing", 280, 7, "S")  // Power level 7 = Sannin/Hancho equivalent
         criminal_grade = "S"  // Explicitly set the criminal grade
         rank_verbs = list()
 
@@ -606,15 +606,18 @@
     verb/exile(player/P as mob in usr.village.players)
         set category = "Hokage"
         set name = "Exile"
+        
         if(!P)
             return
         if(P == usr)
             usr << "You cannot exile yourself!"
             return
-        var/datum/village/V = P.village
-        V.remove_player(P)
-        usr << "You have exiled [P]!"
-    
+            
+        if(make_missing_ninja(P))
+            usr << "You have exiled [P]!"
+        else
+            usr << "Failed to exile [P]."
+
     verb/assign_official_team()
         set category = "Hokage"
         set name = "Assign Official Team"
@@ -956,14 +959,15 @@
     verb/exile(player/P as mob in usr.village.players)
         set category = "Mizukage"
         set name = "Exile"
+        
         if(!P)
             return
         if(P == usr)
             usr << "You cannot exile yourself!"
             return
-        var/datum/village/V = P.village
-        V.remove_player(P)
-        usr << "You have exiled [P]!"
+            
+        if(make_missing_ninja(P))
+            usr << "You have exiled [P]! They are now a [P.rank.criminal_grade]-Grade Criminal!"
 
     verb/assign_official_team()
         set category = "Mizukage"

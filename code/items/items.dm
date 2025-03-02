@@ -161,40 +161,11 @@
     
     verb/abandon_village()
         set category = "Commands"
-        if(!usr.village || usr.village.name == "Missing")
-            usr << "You are not part of any village!"
+        if(make_missing_ninja(usr))
+            // Success - the proc already handles all the messaging
             return
-            
-        // Store reference to the missing village
-        var/datum/village/missing_village
-        for(var/datum/village/V in GLOBAL_VILLAGE_MANAGER.villages)
-            if(V.name == "Missing")
-                missing_village = V
-                break
-            
-        // Store old village name for headband
-        var/old_village_name = usr.village.name
-        
-        // Remove from current village and add to missing
-        var/datum/village/old_village = usr.village
-        old_village.remove_player(usr)
-        missing_village.add_player(usr)
-        
-        // Set missing rank based on stats
-        if(usr.rank)
-            usr.verbs -= usr.rank.rank_verbs
-            usr.rank = null
-            
-        // Get the appropriate criminal rank based on the player's stats
-        var/datum/rank/missing/M = new()
-        var/datum/rank/criminal_rank = M.get_criminal_rank(usr)
-        
-        // Apply the criminal rank to the player
-        criminal_rank.apply_rank(usr)
-        
-        // Update headband icon using the missing_village_icon_states mapping
-        if(missing_village_icon_states[old_village_name])
-            icon_state = missing_village_icon_states[old_village_name]
+        else
+            usr << "Failed to abandon your village."
 
 /obj/item/clothing/shirt
     name = "Shirt"
@@ -381,3 +352,56 @@
     icon_state = ""
     can_be_stored_in_kit = TRUE
     kit_number = 1
+
+// Add this proc to the global scope
+proc/make_missing_ninja(mob/M)
+    if(!M)
+        return FALSE
+    
+    if(!M.village || M.village.name == "Missing")
+        M << "You are not part of any village!"
+        return FALSE
+        
+    // Store reference to the missing village
+    var/datum/village/missing_village
+    for(var/datum/village/V in GLOBAL_VILLAGE_MANAGER.villages)
+        if(V.name == "Missing")
+            missing_village = V
+            break
+    
+    if(!missing_village)
+        return FALSE
+        
+    // Store old village name for headband
+    var/old_village_name = M.village.name
+    
+    // Remove from current village and add to missing
+    var/datum/village/old_village = M.village
+    old_village.remove_player(M)
+    missing_village.add_player(M)
+    
+    // Set missing rank based on stats
+    if(M.rank)
+        M.verbs -= M.rank.rank_verbs
+        M.rank = null
+        
+    // Get the appropriate criminal rank based on the player's stats
+    var/datum/rank/missing/missing_rank = new()
+    var/datum/rank/criminal_rank = missing_rank.get_criminal_rank(M)
+    
+    criminal_rank.apply_rank(M)
+    
+    // Update headband icon if applicable
+    for(var/obj/item/clothing/headband/H in M.worn_items)
+        var/missing_village_icon_states = list(
+            "Konohagakure no Sato" = "MissingKonohagakureInv",
+            "Kirigakure no Sato" = "MissingKirigakureInv",
+            "Sunagakure no Sato" = "MissingSunagakureInv",
+            "Kumogakure no Sato" = "MissingKumogakureInv",
+            "Iwagakure no Sato" = "MissingIwagakureInv"
+        )
+        
+        if(missing_village_icon_states[old_village_name])
+            H.icon_state = missing_village_icon_states[old_village_name]
+    
+    return TRUE
