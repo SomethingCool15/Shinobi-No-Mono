@@ -26,7 +26,7 @@
     var/list/jutsu_statreq = list()
     var/list/rulings = list()
 
-    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements, new_last_edited, new_last_editor, new_rulings, new_jutsu_rank, new_jutsu_statreq)
+    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements, new_jutsu_rank, new_jutsu_statreq, new_rulings)
         ..()
         name = new_jutsu_name
         jutsu_name = new_jutsu_name
@@ -36,8 +36,8 @@
         extra_sections = new_extra_sections
         pp_cost = new_pp_cost
         jutsu_requirements = islist(new_jutsu_requirements) ? new_jutsu_requirements : list(new_jutsu_requirements)
-        last_edited = new_last_edited || time2text(world.realtime, "DD-MM-YYYY") + " UTC"
-        last_editor = new_last_editor || usr.ckey
+        last_edited =  time2text(world.realtime, "DD-MM-YYYY") + " UTC"
+        last_editor =  usr.ckey
         rulings = islist(new_rulings) ? new_rulings : list()
         jutsu_rank = new_jutsu_rank
         jutsu_statreq = islist(new_jutsu_statreq) ? new_jutsu_statreq : list()
