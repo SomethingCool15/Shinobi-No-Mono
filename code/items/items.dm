@@ -171,37 +171,30 @@
             if(V.name == "Missing")
                 missing_village = V
                 break
-        
-        if(!missing_village)
-            usr << "Error: Missing village not found!"
-            return
             
         // Store old village name for headband
         var/old_village_name = usr.village.name
-        usr << "Debug: Old village name: [old_village_name]"
-        usr << "Debug: Available missing states: [missing_village_icon_states]"
         
         // Remove from current village and add to missing
         var/datum/village/old_village = usr.village
         old_village.remove_player(usr)
         missing_village.add_player(usr)
         
-        // Set missing rank
+        // Set missing rank based on stats
         if(usr.rank)
             usr.verbs -= usr.rank.rank_verbs
             usr.rank = null
+            
+        // Get the appropriate criminal rank based on the player's stats
         var/datum/rank/missing/M = new()
-        M.apply_rank(usr)
+        var/datum/rank/criminal_rank = M.get_criminal_rank(usr)
+        
+        // Apply the criminal rank to the player
+        criminal_rank.apply_rank(usr)
         
         // Update headband icon using the missing_village_icon_states mapping
         if(missing_village_icon_states[old_village_name])
-            usr << "Debug: Found matching icon state: [missing_village_icon_states[old_village_name]]"
             icon_state = missing_village_icon_states[old_village_name]
-        else
-            usr << "Debug: No matching icon state found for [old_village_name]"
-        
-        usr << "Current icon_state: [icon_state]"
-        usr << "You have abandoned your village and become a missing ninja!"
 
 /obj/item/clothing/shirt
     name = "Shirt"
