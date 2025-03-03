@@ -26,7 +26,7 @@
     var/list/jutsu_statreq = list()
     var/list/rulings = list()
 
-    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements, new_jutsu_rank, new_jutsu_statreq, new_rulings)
+    New(new_jutsu_name, new_jutsu_element, new_jutsu_description, new_section_requirements, new_extra_sections, new_pp_cost, new_jutsu_requirements, new_jutsu_statreq, new_jutsu_rank, new_rulings)
         ..()
         name = new_jutsu_name
         jutsu_name = new_jutsu_name
@@ -37,10 +37,10 @@
         pp_cost = new_pp_cost
         jutsu_requirements = islist(new_jutsu_requirements) ? new_jutsu_requirements : list(new_jutsu_requirements)
         last_edited =  time2text(world.realtime, "DD-MM-YYYY") + " UTC"
-        last_editor =  usr.ckey
+        last_editor =  usr.key
         rulings = islist(new_rulings) ? new_rulings : list()
         jutsu_rank = new_jutsu_rank
-        jutsu_statreq = islist(new_jutsu_statreq) ? new_jutsu_statreq : list()
+        jutsu_statreq = islist(new_jutsu_statreq) ? new_jutsu_statreq : list(new_jutsu_statreq)
 
     proc/show_jutsu(jutsu_name)
         world << "[usr] has activated a technique! <a href='?src=\ref[src];jutsu=[jutsu_name]'>[jutsu_name]</a>"
@@ -209,13 +209,14 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 "last_editor" = J.last_editor,
                 "pp_cost" = J.pp_cost,
                 "jutsu_requirements" = J.jutsu_requirements,
-                "rulings" = saved_rulings,
                 "jutsu_statreq" = J.jutsu_statreq,
-                "jutsu_rank" = J.jutsu_rank
-                
+                "rulings" = saved_rulings,
+                "jutsu_rank" = J.jutsu_rank   
             )
+            usr<< J.jutsu_rank
             saved_jutsu += list(jutsu_data)
         
+
         S.dir.Cut()
         S["jutsu"] = saved_jutsu
 
@@ -259,12 +260,13 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 jutsu_data["section_requirements"],
                 jutsu_data["extra_sections"],
                 jutsu_data["pp_cost"],
-                jutsu_data["jutsu_requirements"],
-                jutsu_data["last_edited"],
-                jutsu_data["last_editor"],
-                jutsu_data["jutsu_rank"],
-                jutsu_data["jutsu_statreq"]
+                jutsu_data["jutsu_requirements"]
+                //jutsu_data["jutsu_rank"]
             )
+            J.jutsu_rank = jutsu_data["jutsu_rank"]
+            J.last_edited = jutsu_data["last_edited"]
+            J.last_editor = jutsu_data["last_editor"]
+            J.jutsu_statreq = jutsu_data["jutsu_statreq"]
             J.rulings = ruling_objects
             jutsu_list += J
 
@@ -331,40 +333,59 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 if(isnull(requirement))
                     usr << "Jutsu creation cancelled."
                     return
-                    //world << ("List: [GLOBAL_PERK_MANAGER.perk_list]")
                 if(requirement == "None")
-                    requirement = ""
                     usr << "Requirement set to 'None'."
-                while(jutsu_requirements.Find(requirement))
-                    usr << "This requirement has already been added to this jutsu."
-                    requirement = input("Please choose a requirement from the list or 'None' if there is no requirement.") as anything in null|GLOBAL_PERK_MANAGER.perk_list + "None"
+                    break
+                if(jutsu_requirements.Find(requirement))
+                    usr << "This requirement has already been added to this jutsu." 
+                    continue 
                 jutsu_requirements += requirement
                 adding_requirements = alert("Add another requirement?", "Requirements", "Yes", "No") == "Yes"
+
             if(!length(jutsu_requirements))
                 jutsu_requirements = list("")
 
-            var/jutsu_statreq = alert(usr, "Does this jutsu have a Stat requirement?", "Stat Requirement", "Yes", "No")
-            if(jutsu_statreq == "Yes")
-                var/statchoice = input(usr, "Which stat does this jutsu require?") in null|list("Strength", "Endurance", "Agility", "Speed", "Stamina", "Control") 
+            var/list/jutsu_statreq = list()
+            var/stat_requirement
+            var/additional_statreq = "No"
+
+            while(TRUE)
+                if(additional_statreq == "Yes")
+                    stat_requirement = "Yes"
+                else
+                    stat_requirement = alert(usr, "Does this jutsu have a Stat requirement?", "Stat Requirement", "Yes", "No")
+
+                if(stat_requirement == "No")
+                    usr << "No stat requirement added."
+                    break
+                var/statchoice = input(usr, "Which stat does this jutsu require?") in null|list("Strength", "Endurance", "Agility", "Speed", "Stamina", "Control")
+
+                if(isnull(statchoice))
+                    usr << "Stat requirement addition cancelled."
+                    break
+
                 if(statchoice == "Strength")
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
                 if(statchoice == "Endurance") 
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
                 if(statchoice == "Agility")
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
                 if(statchoice == "Speed")
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
                 if(statchoice == "Stamina")
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
                 if(statchoice == "Control")
-                    jutsu_statreq = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
-                    jutsu_statreq += " [statchoice]"
-            else return
+                    stat_requirement = input(usr,"Please input a letter grade for the [statchoice] requirement in the correct format. (e.g D+)") as null|text
+                if(jutsu_statreq.Find("[stat_requirement] [statchoice]"))
+                    usr << "Already added this stat requirement."
+                    continue
+
+                jutsu_statreq += "[stat_requirement] [statchoice]" 
+                
+                additional_statreq = alert("Add another Stat requirement?", "Stat requirements", "Yes", "No")
+                if(additional_statreq == "No")
+                    usr << "Finished adding stat requirements."
+                    break
 
             var/list/section_requirements = list()
             var/list/extra_sections = list()
@@ -385,9 +406,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                         extra_sections[section_name] = section_content
                     
                     add_section = alert("Add another section?", "Add Section", "Yes", "No") == "Yes"
-            usr << "Before Instant: [jutsu_name], [jutsu_element], [jutsu_html], [section_requirements], [extra_sections], [pp_cost], [jutsu_requirements], [jutsu_rank], [jutsu_statreq]"
-            var/obj/jutsu/J = new(jutsu_name, jutsu_element, jutsu_html, section_requirements, extra_sections, pp_cost, jutsu_requirements, jutsu_rank, jutsu_statreq)
-            usr << "After Instant: [jutsu_name], [jutsu_element], [jutsu_html], [section_requirements], [extra_sections], [pp_cost], [jutsu_requirements], [jutsu_rank], [jutsu_statreq]"    //(jutsu_name, jutsu_element, jutsu_html, section_requirements, extra_sections, pp_cost, jutsu_requirements)
+            var/obj/jutsu/J = new(jutsu_name, jutsu_element, jutsu_html, section_requirements, extra_sections, pp_cost, jutsu_requirements, jutsu_statreq, jutsu_rank)    //(jutsu_name, jutsu_element, jutsu_html, section_requirements, extra_sections, pp_cost, jutsu_requirements)
             GLOBAL_JUTSU_MANAGER.jutsu_list += J
             GLOBAL_JUTSU_MANAGER.save_jutsu()
             world << "Jutsu <a href='?src=\ref[J];jutsu=[jutsu_name]'>[jutsu_name]</a> has been added!"
@@ -472,10 +491,11 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                         <td>[J.pp_cost]</td>
                         <td>[jointext(J.jutsu_requirements, ", ")]</td>
                         <td>[J.jutsu_rank]</td>
-                        <td>[J.jutsu_statreq]</td>
-                    </tr>
+                        <td>[jointext(J.jutsu_statreq, ", ")]</td>
+                     </tr>
                 "}
-            
+
+
             html += "</table></body></html>"
             
             usr << browse(html, "window=jutsu_list;size=520x680;can_close=1;can_resize=1")
@@ -682,7 +702,7 @@ var/global/datum/jutsu_manager/GLOBAL_JUTSU_MANAGER
                 return
                 
             R.text = new_text
-            R.last_editor = usr.ckey
+            R.last_editor = usr.key
             R.last_edited = time2text(world.realtime, "DD-MM-YYYY")
             
             GLOBAL_JUTSU_MANAGER.save_jutsu()
