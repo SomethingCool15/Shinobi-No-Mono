@@ -31,7 +31,6 @@
 #include "Konohagakure.dmm"
 #include "code\admin.dm"
 #include "code\area.dm"
-#include "code\obj.dm"
 #include "code\progression.dm"
 #include "code\turf.dm"
 #include "code\world.dm"

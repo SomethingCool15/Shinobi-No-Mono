@@ -106,16 +106,15 @@
             if(SQ.village)
                 SQ.village.squads += SQ
 
-// Item Manager (stub - keep the actual implementation in item_manager.dm)
 /datum/item_manager
     var/list/item_databook_pages = list()
     var/savefile_path = "data/item_databook.sav"
     
     proc/save_item_databook()
-        // Implementation in item_manager.dm
+        
         
     proc/load_item_databook()
-        // Implementation in item_manager.dm
+        
 
 // Declare global variables
 var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER

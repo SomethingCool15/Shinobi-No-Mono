@@ -1,4 +1,4 @@
-// Define the base Item class
+//Base item obj
 /obj/item
     var
         description = ""
@@ -162,7 +162,6 @@
     verb/abandon_village()
         set category = "Commands"
         if(make_missing_ninja(usr))
-            // Success - the proc already handles all the messaging
             return
         else
             usr << "Failed to abandon your village."
@@ -353,7 +352,6 @@
     can_be_stored_in_kit = TRUE
     kit_number = 1
 
-// Add this proc to the global scope
 proc/make_missing_ninja(mob/M)
     if(!M)
         return FALSE
