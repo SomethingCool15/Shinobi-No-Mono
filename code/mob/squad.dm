@@ -25,27 +25,28 @@
                 village.squads -= src
 
     proc/AddMember(mob/M)
-        // Check if adding this member would exceed max members
-        if(members.len >= max_members)
-            // Check for the two exception cases
-            var/temp_members = members.Copy()
-            temp_members += M
-            
-            var/genin_count = 0
-            var/jonin_count = 0
-            var/tokubetsu_jonin_count = 0
-            
-            for(var/mob/N in temp_members)
-                if(N.rank.rank_name == "Genin")
-                    genin_count++
-                else if(N.rank.rank_name == "Jonin")
-                    jonin_count++
-                else if(N.rank.rank_name == "Tokubetsu Jonin")
-                    tokubetsu_jonin_count++
-            
-            if(!((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3)))
-                usr << "The squad has reached its maximum capacity of [max_members] members."
-                return
+        var/temp_members = members.Copy()
+        temp_members += M
+        
+        var/genin_count = 0
+        var/jonin_count = 0
+        var/tokubetsu_jonin_count = 0
+        
+        for(var/mob/N in temp_members)
+            if(N.rank.rank_name == "Genin")
+                genin_count++
+            else if(N.rank.rank_name == "Jonin")
+                jonin_count++
+            else if(N.rank.rank_name == "Tokubetsu Jonin")
+                tokubetsu_jonin_count++
+        
+        // Updated to check both cases: Jonin adding Genin, or Genin adding Jonin
+        var/is_valid_four = (jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3) || (M.rank.rank_name == "Jonin" && genin_count == 3) || (M.rank.rank_name == "Tokubetsu Jonin" && genin_count == 3)
+        
+        // Now check max members, allowing the special 4-member cases
+        if(members.len >= max_members && !is_valid_four)
+            usr << "The squad has reached its maximum capacity of [max_members] members."
+            return
 
         if(!canAddMember(M))
             usr << "[M] cannot be added to the squad due to composition rules."
@@ -54,6 +55,11 @@
         // Actually add the member to the squad
         members += M
         M.squad = src
+        
+        // Update max_members if we've formed a valid 4-member composition
+        if((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3))
+            max_members = 4
+            
         squad_composition = getSquadComposition()
         
         // Notify the user
@@ -256,12 +262,22 @@ mob/verb/invite_to_squad()
     var/is_missing_nin_squad = (src.village.name == "Missing")
     var/max_squad_size = is_missing_nin_squad ? 2 : S.max_members
     
-    // Check capacity
-    if(S.members.len >= max_squad_size)
-        if(is_missing_nin_squad)
-            src << "Rogue shinobi squads can only have 2 members."
-        else
-            src << "Your squad is already at maximum capacity ([S.max_members] members)."
+    var/temp_members = S.members.Copy()
+    var/genin_count = 0
+    var/jonin_count = 0
+    var/tokubetsu_jonin_count = 0
+    
+    for(var/mob/N in temp_members)
+        if(N.rank.rank_name == "Genin")
+            genin_count++
+        else if(N.rank.rank_name == "Jonin")
+            jonin_count++
+        else if(N.rank.rank_name == "Tokubetsu Jonin")
+            tokubetsu_jonin_count++
+
+    // Check if we already have a full valid composition
+    if((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3))
+        src << "Your squad is already at maximum capacity ([S.max_members] members)."
         return
     
     var/list/possible_members = list()
@@ -288,6 +304,14 @@ mob/verb/invite_to_squad()
         
     var/mob/selected = input("Who would you like to invite to your squad?") as null|anything in possible_members
     if(!selected)
+        return
+
+    // Now do the capacity check after we have selected a member
+    if(S.members.len >= max_squad_size && !((jonin_count == 1 && genin_count == 2) || (tokubetsu_jonin_count == 1 && genin_count == 2) || (genin_count == 3 && selected.rank.rank_name in list("Jonin", "Tokubetsu Jonin"))))
+        if(is_missing_nin_squad)
+            src << "Rogue shinobi squads can only have 2 members."
+        else
+            src << "Your squad is already at maximum capacity ([S.max_members] members)."
         return
     
     // For Missing-nin, double check the grade difference
