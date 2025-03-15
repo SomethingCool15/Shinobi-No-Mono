@@ -34,7 +34,7 @@
         
         for(var/datum/squad/SQ in squads)
             var/list/squad_data = list(
-                "squad_name" = SQ.squad_name,
+                "squad_name" = SQ.name,
                 "squad_composition" = SQ.squad_composition,
                 "max_members" = SQ.max_members,
                 "is_war_squad" = istype(SQ, /datum/squad/war_squad)
@@ -60,6 +60,8 @@
         
     proc/load_squads()
         if(!fexists(savefile_path))
+            log_debug("No save file found for squads. Initializing default squads.")
+            save_squads()
             return
             
         var/savefile/S = new(savefile_path)
@@ -75,7 +77,7 @@
             else
                 SQ = new /datum/squad()
                 
-            SQ.squad_name = squad_data["squad_name"]
+            SQ.name = squad_data["squad_name"]
             SQ.squad_composition = squad_data["squad_composition"]
             SQ.max_members = squad_data["max_members"]
             
@@ -105,17 +107,40 @@
             // Add to village's squad list if associated with a village
             if(SQ.village)
                 SQ.village.squads += SQ
+        log_debug("Loaded [squads.len] squads.")
 
 /datum/item_manager
     var/list/item_databook_pages = list()
     var/savefile_path = "data/item_databook.sav"
     
     proc/save_item_databook()
+        var/savefile/S = new(savefile_path)
+        var/list/saved_pages = list()
+        world << "Saving item databook..."
+        for(var/item_type in item_databook_pages)
+            saved_pages["[item_type]"] = item_databook_pages[item_type]
         
+        S["item_pages"] = saved_pages
         
     proc/load_item_databook()
+        if(!fexists(savefile_path))
+            log_debug("No save file found for item databook. Initializing default item databook.")
+            save_item_databook()
+            return
+            
+        var/savefile/S = new(savefile_path)
+        var/list/loaded_pages
         
+        S["item_pages"] >> loaded_pages
+        if(!loaded_pages)
+            return
+            
+        for(var/type_text in loaded_pages)
+            var/item_type = text2path(type_text)
+            if(item_type)
+                item_databook_pages[item_type] = loaded_pages[type_text]
 
+        log_debug("Loaded [item_databook_pages.len] item databook pages.")
 // Declare global variables
 var/global/datum/village_manager/GLOBAL_VILLAGE_MANAGER
 var/global/datum/squad_manager/GLOBAL_SQUAD_MANAGER

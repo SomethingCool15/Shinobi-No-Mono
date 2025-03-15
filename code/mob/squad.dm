@@ -2,7 +2,7 @@
     var
         mob/leader
         list/members = list()
-        squad_name
+        name
         squad_composition
         mission/mission
         max_members = 3
@@ -40,7 +40,6 @@
             else if(N.rank.rank_name == "Tokubetsu Jonin")
                 tokubetsu_jonin_count++
         
-        // Updated to check both cases: Jonin adding Genin, or Genin adding Jonin
         var/is_valid_four = (jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3) || (M.rank.rank_name == "Jonin" && genin_count == 3) || (M.rank.rank_name == "Tokubetsu Jonin" && genin_count == 3)
         
         // Now check max members, allowing the special 4-member cases
@@ -413,7 +412,7 @@ mob/verb/create_squad()
     S.members += src
     S.leader = src
     src.squad = S
-    S.squad_name = "Squad [rand(1,100)]"
+    S.name = "Squad [rand(1,100)]"
     S.squad_composition = S.getSquadComposition()
     
     // Set the squad's village to the creator's village
@@ -500,7 +499,7 @@ mob/verb/create_war_squad()
     S.members += src
     S.leader = src
     src.squad = S
-    S.squad_name = "War Squad [rand(1,100)]"
+    S.name = "War Squad [rand(1,100)]"
     S.squad_composition = "War Squad"
     
     // Set the squad's village to the creator's village
