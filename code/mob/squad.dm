@@ -373,8 +373,6 @@ mob/verb/invite_to_squad()
             src << "[selected] cannot be added to the squad due to composition rules."
             return
         
-        // Bypass confirmation for testing
-        // Use the fixed AddMember proc
         src.squad.AddMember(selected)
 
 mob/verb/leave_squad()
@@ -485,11 +483,10 @@ mob/verb/kick_from_squad()
 /datum/squad/war_squad
     New()
         ..()
-        max_members = 4  // Override the default max_members
+        max_members = 4 // Override the default max_members
     
-    // Override the canAddMember proc without redefining it
+    // Override the canAddMember proc
     canAddMember(mob/M)
-        // Check if adding this member would exceed max members
         if(members.len >= max_members)
             return 0
             
@@ -561,12 +558,15 @@ mob/proc/grade_difference(mob/other)
         
     return abs(my_index - other_index)
 
-// Updated squad_check to handle both login and logout
+// Add this to your globals
+var/global/list/players_in_squads = list()
+
+// Updated squad_check
 mob/proc/squad_check(var/is_logout = FALSE)
     if(is_logout)
-        // Handle logout case
         if(squad)
             squad.MemberOffline(src)
+            players_in_squads[ckey] = 1
         return
     
     // Handle login case (default)
@@ -575,9 +575,12 @@ mob/proc/squad_check(var/is_logout = FALSE)
             if(S.offline_members[name] == ckey)
                 S.MemberOnline(src)
                 src << "You have reconnected to your squad."
+                players_in_squads -= ckey
                 return
     
-    // If we get here, the player's squad no longer exists
-    if(squad)
+    if(players_in_squads[ckey])
         src << "Your squad was disbanded while you were offline."
+        players_in_squads -= ckey
+    
+    if(squad)
         squad = null
