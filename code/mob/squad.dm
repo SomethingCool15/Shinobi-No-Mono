@@ -78,17 +78,14 @@
         if(M.name == leader_name && members.len)
             leader_name = members[1].name
         
-        if(members.len)
-            squad_composition = getSquadComposition()
+        // Check if there are any members left (online or offline)
+        if(members.len || offline_members.len)
+            if(members.len)
+                squad_composition = getSquadComposition()
         else
-            squad_composition = null
-            
-            if(GLOBAL_SQUAD_MANAGER)
-                GLOBAL_SQUAD_MANAGER.removeSquad(src)
-            
-            if(village)
-                village.squads -= src
-
+            disbandSquad()
+            return
+        
     proc/MemberOffline(mob/M)
         if(M in members)
             members -= M
@@ -104,6 +101,10 @@
             // Removing player from offline list
             offline_members -= M.name
             M.squad = src
+            
+            // Update squad composition when a member comes online
+            squad_composition = getSquadComposition()
+            
             return 1
         return 0
         
@@ -428,19 +429,22 @@ mob/verb/create_squad()
     if(src.squad)
         src << "You're already in a squad!"
         return
+    
+    var/squad_name = input(src, "Enter a name for your squad:", "Squad Name", "Squad [rand(1,100)]") as text
+    if(!squad_name)
+        src << "You didn't enter a valid squad name."
+        return
+    
+    for(var/datum/squad/S in GLOBAL_SQUAD_MANAGER.squads)
+        if(S.name == squad_name)
+            src << "A squad with that name already exists."
+            return
         
     var/datum/squad/S = new()
     S.members += src
     S.leader_name = src.name
     src.squad = S
-    var/squad_name = input(src, "Enter a name for your squad:", "Squad Name", "Squad [rand(1,100)]") as null|text
-    if(!squad_name)
-        src << "You didn't enter a valid squad name."
-        return
     S.name = squad_name
-    if(GLOBAL_SQUAD_MANAGER.squads[S.name])
-        src << "A squad with that name already exists."
-        return
     S.squad_composition = S.getSquadComposition()
     
     // Set the squad's village to the creator's village
