@@ -172,11 +172,11 @@ mob
             for(var/obj/item/I in shinobi_kit)
                 stat(I)
 
-        // statpanel("Tasks")
-        // stat("Tasks", "[tasks.len]")
-        // if(tasks.len > 0)
-        //     for(var/datum/task/mission_completions/T in tasks)
-        //         stat(T.desc, "[c_rank_missions_completed]/[T.amount_needed]")
+        statpanel("Tasks")
+        stat("Tasks", "[tasks.len]")
+        if(tasks.len > 0)
+            for(var/datum/task/mission_completions/T in tasks)
+                stat(T.desc, "[c_rank_missions_completed]/[T.amount_needed]")
         
         statpanel("Squad")
         if(squad)
@@ -244,12 +244,12 @@ mob
             if(squad.village)
                 src << "Squad Village: [squad.village.name]"
             
-        // complete_c_rank()
-        //     set name = "Complete C-Rank Mission"
-        //     c_rank_missions_completed += 1
-        //     for(var/datum/task/mission_completions/T in tasks)
-        //         T.complete(usr)
-        //     usr << "You have completed a C-Rank mission. You now have [c_rank_missions_completed] C-Rank missions completed."
+        complete_c_rank()
+            set name = "Complete C-Rank Mission"
+            c_rank_missions_completed += 1
+            for(var/datum/task/mission_completions/T in tasks)
+                T.complete(usr)
+            usr << "You have completed a C-Rank mission. You now have [c_rank_missions_completed] C-Rank missions completed."
 
         increaseStrength()
             if(stat_points < 1)

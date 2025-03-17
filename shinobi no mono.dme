@@ -45,6 +45,7 @@
 #include "code\mob\player.dm"
 #include "code\mob\ranks.dm"
 #include "code\mob\squad.dm"
+#include "code\mob\tasks.dm"
 #include "code\perks\perks.dm"
 #include "code\villages\Kirigakure.dm"
 #include "code\villages\Konohagakure.dm"

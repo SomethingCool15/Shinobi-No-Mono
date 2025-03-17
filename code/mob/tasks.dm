@@ -3,7 +3,7 @@
         name
         desc
         pp_reward
-        completed = False
+        completed = FALSE
     
     proc/can_complete(mob/M)
         return FALSE
@@ -38,7 +38,8 @@
     complete(mob/M)
         if(can_complete(M))
             completed = TRUE
-            M.pp += pp_reward
+            M.stat_points += pp_reward
+            M.add_pp(pp_reward)
             M << "Congratulations! You have completed [name] and received [pp_reward] PP!"
             // Add the next task in the chain if it exists
             if(next_task_type && M.rank)
@@ -138,4 +139,4 @@
     pp_reward = 5
     
     can_complete(mob/M)
-        return M.official_squad.len > 0
+        return M.of_squad = TRUE
