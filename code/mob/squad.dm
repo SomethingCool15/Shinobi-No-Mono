@@ -561,7 +561,6 @@ mob/proc/grade_difference(mob/other)
 // Add this to your globals
 var/global/list/players_in_squads = list()
 
-// Updated squad_check
 mob/proc/squad_check(var/is_logout = FALSE)
     if(is_logout)
         if(squad)
@@ -569,7 +568,7 @@ mob/proc/squad_check(var/is_logout = FALSE)
             players_in_squads[ckey] = 1
         return
     
-    // Handle login case (default)
+    // Handle login case
     if(GLOBAL_SQUAD_MANAGER)
         for(var/datum/squad/S in GLOBAL_SQUAD_MANAGER.squads)
             if(S.offline_members[name] == ckey)
@@ -578,9 +577,7 @@ mob/proc/squad_check(var/is_logout = FALSE)
                 players_in_squads -= ckey
                 return
     
+    // Handle no squad case
     if(players_in_squads[ckey])
         src << "Your squad was disbanded while you were offline."
         players_in_squads -= ckey
-    
-    if(squad)
-        squad = null
