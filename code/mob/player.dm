@@ -18,10 +18,17 @@ player
 		src.AddToInventory(SH)
 		if(playerList.len == 1)
 			spawn_test_players()
+		
+		squad_check()
 
 	Logout()
 		playerList -= src
+		
+		squad_check(TRUE)
+		
 		..()
+		
+		del(src)
 
 	proc/spawn_test_players()
 		var/list/test_players = list(

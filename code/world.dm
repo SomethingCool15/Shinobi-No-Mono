@@ -26,7 +26,6 @@ var
     
     // Squad manager
     GLOBAL_SQUAD_MANAGER = new()
-    GLOBAL_SQUAD_MANAGER.load_squads()
     
     // Jutsu manager
     GLOBAL_JUTSU_MANAGER = new()
@@ -34,11 +33,11 @@ var
     
     // Item manager
     GLOBAL_ITEM_MANAGER = new()
-    GLOBAL_ITEM_MANAGER.save_item_databook()
+    GLOBAL_ITEM_MANAGER.load_item_databook()
     
     // Databook manager
     GLOBAL_DATABOOK = new()
-    
+
     log_debug("World initialization complete.")
 
 // Helper proc for debug logging
