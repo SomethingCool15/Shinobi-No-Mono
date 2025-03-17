@@ -107,12 +107,22 @@ admin5
             P.sp_cap -= amount
             P << "Your SP cap has been decreased by [amount]!"
 
-        give_item(player/P as mob in world, item_type as null|anything in typesof(/obj/item))
+        give_item(player/P as mob in world)
             set category = "Admin"
             set name = "Give Item"
-            if(!item_type) return
             
-            var/obj/item/I = new item_type()
+            var/list/item_list = list()
+            for(var/item_path in typesof(/obj/item))
+                var/obj/item/temp = new item_path()
+                item_list[temp.name] = item_path
+                del(temp)
+
+            var/selected_item = input("Choose an item to give:", "Give Item") as null|anything in item_list 
+            if(!selected_item) return
+
+            var/item_path = item_list[selected_item]
+            var/obj/item/I = new item_path()
+
             if(P.AddToInventory(I))
                 usr << "Gave [P] a [I.name]"
                 P << "You received a [I.name]!"
@@ -144,6 +154,10 @@ admin5
             set name = "Summon Squad"
             
             if(!S)
+                return
+                
+            var/confirm = alert("Are you sure you want to summon squad [S.name]?", "Confirm Summon", "Yes", "No")
+            if(confirm == "No")
                 return
                 
             for(var/mob/M in S.members) 
