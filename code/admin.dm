@@ -131,8 +131,8 @@ admin5
             var/info = "All Active Squads:\n"
             for(var/datum/squad/S in GLOBAL_SQUAD_MANAGER.squads)
                 var/village_name = S.village ? S.village.name : "No Village"
-                info += "Squad: [S.squad_name] ([S.squad_composition]) - Village: [village_name]\n"
-                info += "  Leader: [S.leader]\n"
+                info += "Squad: [S.name] ([S.squad_composition]) - Village: [village_name]\n"
+                info += "  Leader: [S.leader_name]\n"
                 info += "  Members ([S.members.len]/[S.max_members]):\n"
                 for(var/mob/M in S.members)
                     info += "    - [M] ([M.rank.rank_name])\n"
@@ -146,11 +146,11 @@ admin5
             if(!S)
                 return
                 
-            for(var/mob/M in S.members)
+            for(var/mob/M in S.members) 
                 M.loc = usr.loc
                 M << "You have been summoned by an admin."
                 
-            usr << "Squad [S.squad_name] has been summoned to your location."
+            usr << "Squad [S.name] has been summoned to your location."
             
         disband_squad(datum/squad/S as null|anything in GLOBAL_SQUAD_MANAGER.squads)
             set category = "Admin"
@@ -159,9 +159,9 @@ admin5
             if(!S)
                 return
                 
-            var/confirm = alert("Are you sure you want to disband squad [S.squad_name]?", "Confirm Disband", "Yes", "No")
+            var/confirm = alert("Are you sure you want to disband squad [S.name]?", "Confirm Disband", "Yes", "No")
             if(confirm == "No")
                 return
                 
             S.disbandSquad()
-            usr << "Squad [S.squad_name] has been disbanded."
+            usr << "Squad [S.name] has been disbanded."

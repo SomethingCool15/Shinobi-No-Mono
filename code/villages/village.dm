@@ -19,6 +19,7 @@
 
     proc/load_villages()
         if(!fexists(savefile_path))
+            log_debug("No save file found for villages. Initializing default villages.")
             initialize_default_villages()
             return
             
@@ -32,6 +33,8 @@
             V.economy = village_data["economy"]
             V.clans = village_data["clans"]
             villages += V
+            
+        log_debug("Loaded [villages.len] villages.")
 
     proc/initialize_default_villages()
         // Only called if no save file exists

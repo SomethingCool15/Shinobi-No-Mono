@@ -1,8 +1,9 @@
 /datum/squad
     var
-        mob/leader
+        leader_name
         list/members = list()
-        squad_name
+        list/offline_members = list() // Map of player names to ckeys for offline members
+        name
         squad_composition
         mission/mission
         max_members = 3
@@ -12,40 +13,42 @@
         for(var/mob/M in members)
             M.squad = null
             M << "The squad has been disbanded."
-            members = list()
-            leader = null
-            squad_composition = null
-            
-            // Remove from global squad manager
-            if(GLOBAL_SQUAD_MANAGER)
-                GLOBAL_SQUAD_MANAGER.removeSquad(src)
-            
-            // Remove from village's squad list if associated with a village
-            if(village)
-                village.squads -= src
+        
+        members = list()
+        offline_members = list() // Clear offline members too
+        leader_name = null
+        squad_composition = null
+        
+        // Remove from global squad manager
+        if(GLOBAL_SQUAD_MANAGER)
+            GLOBAL_SQUAD_MANAGER.removeSquad(src)
+        
+        // Remove from village's squad list if associated with a village
+        if(village)
+            village.squads -= src
 
     proc/AddMember(mob/M)
-        // Check if adding this member would exceed max members
-        if(members.len >= max_members)
-            // Check for the two exception cases
-            var/temp_members = members.Copy()
-            temp_members += M
-            
-            var/genin_count = 0
-            var/jonin_count = 0
-            var/tokubetsu_jonin_count = 0
-            
-            for(var/mob/N in temp_members)
-                if(N.rank.rank_name == "Genin")
-                    genin_count++
-                else if(N.rank.rank_name == "Jonin")
-                    jonin_count++
-                else if(N.rank.rank_name == "Tokubetsu Jonin")
-                    tokubetsu_jonin_count++
-            
-            if(!((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3)))
-                usr << "The squad has reached its maximum capacity of [max_members] members."
-                return
+        var/temp_members = members.Copy()
+        temp_members += M
+        
+        var/genin_count = 0
+        var/jonin_count = 0
+        var/tokubetsu_jonin_count = 0
+        
+        for(var/mob/N in temp_members)
+            if(N.rank.rank_name == "Genin")
+                genin_count++
+            else if(N.rank.rank_name == "Jonin")
+                jonin_count++
+            else if(N.rank.rank_name == "Tokubetsu Jonin")
+                tokubetsu_jonin_count++
+        
+        var/is_valid_four = (jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3) || (M.rank.rank_name == "Jonin" && genin_count == 3) || (M.rank.rank_name == "Tokubetsu Jonin" && genin_count == 3)
+        
+        // Now check max members, allowing the special 4-member cases
+        if(members.len >= max_members && !is_valid_four)
+            usr << "The squad has reached its maximum capacity of [max_members] members."
+            return
 
         if(!canAddMember(M))
             usr << "[M] cannot be added to the squad due to composition rules."
@@ -54,6 +57,11 @@
         // Actually add the member to the squad
         members += M
         M.squad = src
+        
+        // Update max_members if we've formed a valid 4-member composition
+        if((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3))
+            max_members = 4
+            
         squad_composition = getSquadComposition()
         
         // Notify the user
@@ -64,22 +72,44 @@
         members -= M
         M.squad = null
         
+        offline_members -= M.name
+        
+        // If leader was removed, assign a new leader
+        if(M.name == leader_name && members.len)
+            leader_name = members[1].name
+        
         if(members.len)
             squad_composition = getSquadComposition()
-            
-            // If leader was removed, assign a new leader
-            if(M == leader && members.len)
-                leader = members[1]
         else
             squad_composition = null
             
-            // Remove from global squad manager if squad is empty
             if(GLOBAL_SQUAD_MANAGER)
                 GLOBAL_SQUAD_MANAGER.removeSquad(src)
             
-            // Remove from village's squad list if associated with a village
             if(village)
                 village.squads -= src
+
+    proc/MemberOffline(mob/M)
+        if(M in members)
+            members -= M
+            // Adding player to offline list
+            offline_members[M.name] = M.ckey
+            
+            return 1
+        return 0
+        
+    proc/MemberOnline(mob/M)
+        if(offline_members[M.name] == M.ckey)
+            members += M
+            // Removing player from offline list
+            offline_members -= M.name
+            M.squad = src
+            return 1
+        return 0
+        
+    // Get total member count (online + offline)
+    proc/GetTotalMemberCount()
+        return members.len + offline_members.len
 
     proc/getSquadComposition()
         var/genin_count = 0
@@ -112,10 +142,13 @@
         return "Unknown Squad"
 
     proc/canAddMember(mob/M)
-        if(!members.len)
+        if(!members.len && !offline_members.len)
             return 1
-            
-        if(members.len >= max_members)
+        
+        // Get total member count including offline members
+        var/total_members = GetTotalMemberCount()
+        
+        if(total_members >= max_members)
             var/temp_members = members.Copy()
             temp_members += M
             
@@ -245,7 +278,7 @@ mob/verb/invite_to_squad()
         src << "You are not in a squad."
         return
     
-    if(src != src.squad.leader)
+    if(src.name != src.squad.leader_name)
         src << "Only the squad leader can invite new members."
         return
     
@@ -256,8 +289,29 @@ mob/verb/invite_to_squad()
     var/is_missing_nin_squad = (src.village.name == "Missing")
     var/max_squad_size = is_missing_nin_squad ? 2 : S.max_members
     
-    // Check capacity
-    if(S.members.len >= max_squad_size)
+    // Get total member count including offline members
+    var/total_members = S.GetTotalMemberCount()
+    
+    var/temp_members = S.members.Copy()
+    var/genin_count = 0
+    var/jonin_count = 0
+    var/tokubetsu_jonin_count = 0
+    
+    for(var/mob/N in temp_members)
+        if(N.rank.rank_name == "Genin")
+            genin_count++
+        else if(N.rank.rank_name == "Jonin")
+            jonin_count++
+        else if(N.rank.rank_name == "Tokubetsu Jonin")
+            tokubetsu_jonin_count++
+
+    // Check if we already have a full valid composition
+    if((jonin_count == 1 && genin_count == 3) || (tokubetsu_jonin_count == 1 && genin_count == 3))
+        src << "Your squad is already at maximum capacity ([S.max_members] members)."
+        return
+    
+    // Check if we're at max capacity considering offline members
+    if(total_members >= max_squad_size)
         if(is_missing_nin_squad)
             src << "Rogue shinobi squads can only have 2 members."
         else
@@ -289,10 +343,18 @@ mob/verb/invite_to_squad()
     var/mob/selected = input("Who would you like to invite to your squad?") as null|anything in possible_members
     if(!selected)
         return
+
+    // Now do the capacity check after we have selected a member
+    if(S.members.len >= max_squad_size && !((jonin_count == 1 && genin_count == 2) || (tokubetsu_jonin_count == 1 && genin_count == 2) || (genin_count == 3 && selected.rank.rank_name in list("Jonin", "Tokubetsu Jonin"))))
+        if(is_missing_nin_squad)
+            src << "Rogue shinobi squads can only have 2 members."
+        else
+            src << "Your squad is already at maximum capacity ([S.max_members] members)."
+        return
     
     // For Missing-nin, double check the grade difference
     if(src.village.name == "Missing" && selected.village.name == "Missing")
-        if(src.grade_difference(selected) > 2)
+        if(src.grade_difference(selected) > 2 || src.grade_difference(selected) < 2)
             src << "You cannot invite [selected] to your squad. Their power level is too different from yours."
             return
     
@@ -311,8 +373,6 @@ mob/verb/invite_to_squad()
             src << "[selected] cannot be added to the squad due to composition rules."
             return
         
-        // Bypass confirmation for testing
-        // Use the fixed AddMember proc
         src.squad.AddMember(selected)
 
 mob/verb/leave_squad()
@@ -323,7 +383,7 @@ mob/verb/leave_squad()
         src << "You are not in a squad."
         return
         
-    if(src == src.squad.leader && src.squad.members.len > 1)
+    if(src.name == src.squad.leader_name)
         src.squad.disbandSquad()
         return
         
@@ -338,7 +398,7 @@ mob/verb/transfer_leadership()
         src << "You are not in a squad."
         return
         
-    if(src != src.squad.leader)
+    if(src.name != src.squad.leader_name)
         src << "Only the squad leader can transfer leadership."
         return
         
@@ -353,25 +413,9 @@ mob/verb/transfer_leadership()
     if(!new_leader)
         return
         
-    src.squad.leader = new_leader
+    src.squad.leader_name = new_leader.name
     src << "You have transferred squad leadership to [new_leader]."
     new_leader << "You are now the leader of the squad."
-
-mob/verb/view_squad_info()
-    set name = "View Squad Info"
-    set category = "Squad"
-    
-    if(!src.squad)
-        src << "You are not in a squad."
-        return
-    
-    var/info = "Squad Information:\n"
-    info += "Squad Type: [src.squad.squad_composition]\n"
-    info += "Leader: [src.squad.leader]\n"
-    info += "Members ([src.squad.members.len]/[src.squad.max_members]):\n"
-    for(var/mob/M in src.squad.members)
-        info += "- [M] ([M.rank.rank_name])\n"
-    src << info
 
 mob/verb/create_squad()
     set name = "Create Squad"
@@ -387,9 +431,16 @@ mob/verb/create_squad()
         
     var/datum/squad/S = new()
     S.members += src
-    S.leader = src
+    S.leader_name = src.name
     src.squad = S
-    S.squad_name = "Squad [rand(1,100)]"
+    var/squad_name = input(src, "Enter a name for your squad:", "Squad Name", "Squad [rand(1,100)]") as null|text
+    if(!squad_name)
+        src << "You didn't enter a valid squad name."
+        return
+    S.name = squad_name
+    if(GLOBAL_SQUAD_MANAGER.squads[S.name])
+        src << "A squad with that name already exists."
+        return
     S.squad_composition = S.getSquadComposition()
     
     // Set the squad's village to the creator's village
@@ -410,51 +461,55 @@ mob/verb/kick_from_squad()
         src << "You are not in a squad."
         return
         
-    if(src != src.squad.leader)
+    if(src.name != src.squad.leader_name)
         src << "Only the squad leader can kick members from the squad."
         return
         
     if(src.squad.members.len <= 1)
         src << "There are no other members to kick from the squad."
         return
-    
-    var/is_war_squad = istype(src.squad, /datum/squad/war_squad)
-    var/squad_type = is_war_squad ? "war squad" : "squad"
         
     var/list/possible_kicks = src.squad.members.Copy()
     possible_kicks -= src
     
-    var/mob/selected = input("Who would you like to kick from your [squad_type]?") as null|anything in possible_kicks
+    var/mob/selected = input("Who would you like to kick from your [name]?") as null|anything in possible_kicks
     if(!selected)
         return
         
     src.squad.RemoveMember(selected)
-    src << "You have kicked [selected] from your [squad_type]."
-    selected << "You have been kicked from [src]'s [squad_type]."
+    src << "You have kicked [selected] from your [name]."
+    selected << "You have been kicked from [src]'s [name]."
 
 /datum/squad/war_squad
-    // Don't redefine max_members here, override it in New()
-    
     New()
         ..()
-        max_members = 4  // Override the default max_members
+        max_members = 4 // Override the default max_members
     
-    // Override the canAddMember proc without redefining it
+    // Override the canAddMember proc
     canAddMember(mob/M)
-        // Check if adding this member would exceed max members
         if(members.len >= max_members)
             return 0
             
+        // Get the leader mob
+        var/mob/leader = null
+        for(var/mob/L in members)
+            if(L.name == leader_name)
+                leader = L
+                break
+                
         // Check if the member is from another village
-        if(M.village != leader.village)
+        if(leader && M.village != leader.village)
+            src << "You cannot add a member from another village to your war squad."
             return 0
             
         // Check if the member is an academy student
         if(M.rank.rank_name == "Academy Student")
+            src << "You cannot add an academy student to your war squad."
             return 0
             
         // Check if the member is a civilian
         if(M.rank.rank_name == "Civilian")
+            src << "You cannot add a civilian to your war squad."
             return 0
             
         // All other ranks are allowed
@@ -474,9 +529,9 @@ mob/verb/create_war_squad()
         
     var/datum/squad/war_squad/S = new()
     S.members += src
-    S.leader = src
+    S.leader_name = src.name
     src.squad = S
-    S.squad_name = "War Squad [rand(1,100)]"
+    S.name = "War Squad [rand(1,100)]"
     S.squad_composition = "War Squad"
     
     // Set the squad's village to the creator's village
@@ -502,3 +557,27 @@ mob/proc/grade_difference(mob/other)
         return 999 // If grade not found, return a large number
         
     return abs(my_index - other_index)
+
+// Add this to your globals
+var/global/list/players_in_squads = list()
+
+mob/proc/squad_check(var/is_logout = FALSE)
+    if(is_logout)
+        if(squad)
+            squad.MemberOffline(src)
+            players_in_squads[ckey] = 1
+        return
+    
+    // Handle login case
+    if(GLOBAL_SQUAD_MANAGER)
+        for(var/datum/squad/S in GLOBAL_SQUAD_MANAGER.squads)
+            if(S.offline_members[name] == ckey)
+                S.MemberOnline(src)
+                src << "You have reconnected to your squad."
+                players_in_squads -= ckey
+                return
+    
+    // Handle no squad case
+    if(players_in_squads[ckey])
+        src << "Your squad was disbanded while you were offline."
+        players_in_squads -= ckey

@@ -33,7 +33,7 @@ mob
         passed_hancho = FALSE
         datum/village/village
         datum/squad/squad
-        datum/squad/official_squad/of_squad
+        of_squad = FALSE
         c_rank_missions_completed = 0
         b_rank_missions_completed = 0
         a_rank_missions_completed = 0
@@ -125,7 +125,7 @@ mob
         return get_total_points_spent() < sp_cap
 
     proc/calc_elo()
-        var/elo = c_rank_missions_completed * 100 + b_rank_missions_completed * 200 + a_rank_missions_completed * 300 + s_rank_missions_completed * 400
+        return src.c_rank_missions_completed * 10 + src.b_rank_missions_completed * 20 + src.a_rank_missions_completed * 30 + src.s_rank_missions_completed * 40
 
     Stat()
         ..()
@@ -137,6 +137,7 @@ mob
         stat("Control", "[control] ([getStatGrade(control)])")
         stat("Stamina", "[stamina] ([getStatGrade(stamina)])")
         stat("Chakra", "[chakra] ([getStatGrade(chakra)])")
+        stat("Elo", "[calc_elo()]")
         stat("----------------------------------------------")
         stat("Stat Points", "[stat_points]")
         stat("PP", "[unspent_pp]/[total_pp]")
@@ -171,7 +172,85 @@ mob
             for(var/obj/item/I in shinobi_kit)
                 stat(I)
 
+        statpanel("Tasks")
+        stat("Tasks", "[tasks.len]")
+        if(tasks.len > 0)
+            for(var/datum/task/mission_completions/T in tasks)
+                stat(T.desc, "[c_rank_missions_completed]/[T.amount_needed]")
+        
+        statpanel("Squad")
+        if(squad)
+            stat("Squad: ", squad.name)
+            
+            // Find the leader in online members
+            var/leader_found = FALSE
+            for(var/mob/M in squad.members)
+                if(M.name == squad.leader_name)
+                    stat("Leader: ", M.name)
+                    leader_found = TRUE
+                    break
+            
+            // If leader not found in online members, they must be offline
+            if(!leader_found)
+                stat("Leader: ", "[squad.leader_name] (OFFLINE)")
+            
+            stat("Members", "[squad.GetTotalMemberCount()]/[squad.max_members]")
+            
+            // Display online members
+            for(var/mob/M in squad.members)
+                stat(M)
+            
+            // Display offline members
+            for(var/player_name in squad.offline_members)
+                stat("[player_name]", "OFFLINE")
+            
+            stat("Squad Type: ", squad.squad_composition)
+        else
+            stat("You are not currently in a squad.")
+            
     verb
+        output_squad_info()
+            set name = "Output Squad Info"
+
+            if(!squad)
+                src << "You are not in a squad."
+                return
+
+            src << "Squad Name: [squad.name]"
+            
+            // Find the leader in online members
+            var/leader_found = FALSE
+            for(var/mob/M in squad.members)
+                if(M.name == squad.leader_name)
+                    src << "Leader: [M.name]"
+                    leader_found = TRUE
+                    break
+            
+            // If leader not found in online members, they must be offline
+            if(!leader_found)
+                src << "Leader: [squad.leader_name] (OFFLINE)"
+            
+            src << "Members: [squad.GetTotalMemberCount()]/[squad.max_members]"
+            
+            // Display online members
+            for(var/mob/M in squad.members)
+                src << "Member: [M.name]"
+            
+            // Display offline members
+            for(var/player_name in squad.offline_members)
+                src << "Member: [player_name] (OFFLINE)"
+            
+            src << "Squad Type: [squad.squad_composition]"
+            if(squad.village)
+                src << "Squad Village: [squad.village.name]"
+            
+        complete_c_rank()
+            set name = "Complete C-Rank Mission"
+            c_rank_missions_completed += 1
+            for(var/datum/task/mission_completions/T in tasks)
+                T.complete(usr)
+            usr << "You have completed a C-Rank mission. You now have [c_rank_missions_completed] C-Rank missions completed."
+
         increaseStrength()
             if(stat_points < 1)
                 usr << "Not enough passive points to increase strength."
@@ -259,3 +338,7 @@ mob
     proc/has_perk(perk_name)
         if(!perk_name) return 1  // If no perk required, return true
         return (perk_name in perk_list)  // Check if perk exists in their list
+
+    proc/add_pp(amount)
+        total_pp += amount
+        unspent_pp += amount

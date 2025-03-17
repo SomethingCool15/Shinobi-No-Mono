@@ -147,11 +147,6 @@
         jutsu_list += J
         src << "You learned [J.jutsu_name]!"
 
-/world/New()
-    ..()
-    GLOBAL_JUTSU_MANAGER = new()
-    GLOBAL_JUTSU_MANAGER.load_jutsu()
-
 /datum/jutsu_manager
     var/list/jutsu_list = list()
     var/savefile_path = "data/jutsu_database.sav"
@@ -201,6 +196,7 @@
         
         if(!fexists(savefile_path))
             // First time setup - create empty database
+            log_debug("No save file found for jutsu. Initializing default jutsu.")
             save_jutsu()
             return
             
@@ -242,6 +238,8 @@
             )
             J.rulings = ruling_objects
             jutsu_list += J
+        
+        log_debug("Loaded [jutsu_list.len] jutsu.")
 
 /owner
     verb
