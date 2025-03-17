@@ -544,7 +544,6 @@ mob/verb/create_war_squad()
     
     src << "You have created a new war squad. This squad can have up to 4 members with no composition restrictions."
 
-// Add this helper proc to the mob type to compare stat grades
 mob/proc/grade_difference(mob/other)
     var/list/grades = list("E", "E+", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+", "S-", "S", "S+")
     var/my_grade = getOverallGrade()
