@@ -558,7 +558,6 @@ mob/proc/grade_difference(mob/other)
         
     return abs(my_index - other_index)
 
-// Add this to your globals
 var/global/list/players_in_squads = list()
 
 mob/proc/squad_check(var/is_logout = FALSE)
