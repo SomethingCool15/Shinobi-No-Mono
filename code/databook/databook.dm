@@ -39,7 +39,8 @@
         S["pages"] >> custom_pages
         if(!custom_pages)
             return
-            
+        
+        var/pages_loaded = 0    
         for(var/page_id in custom_pages)
             var/list/page_data = custom_pages[page_id]
             var/datum/databook_page/new_page
@@ -62,6 +63,9 @@
             new_page.last_editor = page_data["last_editor"]
             new_page.visible = page_data["visible"]
             pages[page_id] = new_page
+            pages_loaded++
+            
+        log_debug("Loaded [pages_loaded] databook pages.")
 
     proc/add_page(title, content, visible)
         var/page_id = lowertext(replacetext(title, " ", "_"))

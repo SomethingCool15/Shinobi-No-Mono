@@ -11,6 +11,7 @@ mob
         stamina = 5
         moniker = ""
         chakra = 5
+        ryo = 500
         jinchuuriki = FALSE
         clan = ""
         division = ""
@@ -34,10 +35,12 @@ mob
         datum/village/village
         datum/squad/squad
         of_squad = FALSE
+        d_rank_missions_completed = 0
         c_rank_missions_completed = 0
         b_rank_missions_completed = 0
         a_rank_missions_completed = 0
         s_rank_missions_completed = 0
+        mission_cooldown = 0
         list/sub_ranks = list()
         list/inventory = list()
         list/shinobi_kit = list()
@@ -342,3 +345,15 @@ mob
     proc/add_pp(amount)
         total_pp += amount
         unspent_pp += amount
+    
+    proc/mission_complete(rank)
+        if(rank == "D")
+            d_rank_missions_completed += 1
+        else if(rank == "C")
+            c_rank_missions_completed += 1
+        else if(rank == "B")
+            b_rank_missions_completed += 1
+        else if(rank == "A")
+            a_rank_missions_completed += 1
+        else if(rank == "S")
+            s_rank_missions_completed += 1

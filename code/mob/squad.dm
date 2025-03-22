@@ -5,7 +5,7 @@
         list/offline_members = list() // Map of player names to ckeys for offline members
         name
         squad_composition
-        mission/mission
+        datum/mission/mission
         max_members = 3
         datum/village/village  // Add village reference
 
@@ -68,6 +68,10 @@
         usr << "[M] has been added to your squad."
         M << "You have been added to [usr]'s squad."
 
+    proc/message_squad(var/message)
+        for(var/mob/M in members)
+            M << message
+
     proc/RemoveMember(mob/M)
         members -= M
         M.squad = null
@@ -85,7 +89,7 @@
         else
             disbandSquad()
             return
-        
+
     proc/MemberOffline(mob/M)
         if(M in members)
             members -= M
@@ -111,6 +115,12 @@
     // Get total member count (online + offline)
     proc/GetTotalMemberCount()
         return members.len + offline_members.len
+
+    proc/GetMembers()
+        var/list/members_list = list()
+        members_list += members
+        members_list += offline_members
+        return members_list
 
     proc/getSquadComposition()
         var/genin_count = 0
