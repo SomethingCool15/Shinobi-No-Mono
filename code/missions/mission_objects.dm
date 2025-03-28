@@ -1,59 +1,88 @@
-/obj/item/mission_post
+/obj/mission_board
+    name = "Mission Board"
+    desc = "A board for posting and accepting missions."
+    icon = 'icons/Misc/BillBoard.dmi'
+    icon_state = "full"
+
+    Click()
+        ..()
+        view_missions()
+    
+    verb
+        view_missions()
+            if(!usr.squad)
+                usr << "You are not in a squad."
+                return
+
+            if(!(usr in range(5, src.loc)))
+                usr << "You are not close enough to the mission board."
+                return
+            
+            for(var/mob/M in usr.squad.members)
+                if(!(M in view(5, src.loc)))
+                    usr << "Gather your squad members to view missions."
+                    return
+            
+            if(usr.squad.mission)
+                usr << "You already have a mission."
+                return
+            
+            for(var/mob/M in usr.squad.members)
+                if(M.mission_cooldown > world.time)
+                    usr << "Someone in your squad is on cooldown."
+                    return
+            
+            var/list/missions = list(
+                "C-Rank: Package Delivery"
+            )
+
+            var/mission_choice = input("Select a mission", "Mission Selection") as null|anything in missions
+            if(!mission_choice)
+                return
+            
+            switch(mission_choice)
+                if("C-Rank: Package Delivery")
+                    assign_delivery_mission(usr.squad)
+
+    proc/assign_delivery_mission(datum/squad/S)
+        var/list/available_posts = new()
+        
+        // Gather available posts
+        for(var/obj/mission_post/P in world)
+            if(P.active_mission == null)
+                available_posts += P  // Empty posts are always available
+            else if(P.active_mission.squads.len == 1 && P.active_mission.squads[1].village.name != S.village.name)
+                available_posts += P  // Only add posts where existing squad is from different village
+        
+        if(available_posts.len > 0)
+            var/obj/mission_post/P = pick(available_posts)
+            if(P.active_mission)
+                // Assign existing mission to squad
+                P.active_mission.give_delivery_mission(S, P)
+            else
+                // Create new mission at empty post
+                var/obj/mission/c_rank/delivery/M = new()
+                M.target_post = P
+                P.active_mission = M
+                M.give_delivery_mission(S, P)
+            return TRUE
+        else
+            world << "There are no meeting posts avaiable at the moment."
+        return FALSE
+
+
+                
+/obj/mission_board/konoha_mission_board
+    name = "Konoha Mission Board"
+    desc = "A board for posting and accepting missions."
+
+/obj/mission_post
     name = "Mission Post"
     desc = "A meeting place for shinobi to meet their clients."
     icon = 'icons/Misc/BillBoard.dmi'
     icon_state = "full"
-    var/datum/mission/active_mission
+    var/obj/mission/c_rank/delivery/active_mission
 
-    // Check if this post is available for a mission
-    proc/is_available()
-        return !active_mission
-    
-    // Set the active mission for this post
-    proc/set_mission(datum/mission/M)
-        if(active_mission)
-            return FALSE
-        
-        active_mission = M
-        return TRUE
-    
-    // Clear the mission when completed
-    proc/clear_mission()
-        active_mission = null
-        icon_state = "full" // Reset appearance
-
-    Click()
-        if(!usr || !active_mission)
-            return
-            
-        // Handle delivery missions
-        if(istype(active_mission, /datum/mission/crank/delivery))
-            var/datum/mission/crank/delivery/D = active_mission
-            
-            if(D.client_arrived)
-                if(usr.squad && (usr.squad in D.squads))
-                    D.deliver_package(usr)
-                else
-                    usr << "This is not your mission."
-            else if(usr.squad && (usr.squad in D.squads))
-                usr << "The client hasn't arrived yet. [D.remaining_time/60] minutes remaining."
-            else
-                usr << "This post is currently occupied with a delivery mission."
-
-/obj/item/mission_post/post1
+/obj/mission_post/post1
     name = "Mission Post 1"
-
-/obj/item/mission_post/post2
-    name = "Mission Post 2"
-
-/obj/item/mission_post/post3
-    name = "Mission Post 3"
-
-/obj/item/mission_post/post4
-    name = "Mission Post 4"
-    
-/obj/item/mission_post/post5
-    name = "Mission Post 5"
-
-/obj/item/mission_post/post6
-    name = "Mission Post 6"
+    desc = "A meeting place for shinobi to meet their clients."

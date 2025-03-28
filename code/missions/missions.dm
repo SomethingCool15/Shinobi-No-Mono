@@ -1,284 +1,189 @@
-/datum/mission
+// Base Mission Object
+/obj/mission
+    name = "Mission"
+    desc = "A mission assignment"
     var
-        name
-        description
-        reward
-        list/squads = list()
-        rank
-        completed = FALSE
-        datum/squad/completed_by
-        datum/squad/failed_by
-        completed_at
-        max_squads = 2
-        fail_cooldown = 18000
-        success_cooldown = 6000
+        reward = 100              // Ryo reward
+        rank = "D"                // Mission rank (D, C, B, A, S)
+        
+        // Squad tracking
+        list/squads = list()      // Squads assigned to this mission
+        max_squads = 2            // Maximum number of squads allowed
+        
+        // Mission state
+        completed = FALSE         // Whether mission is completed
+        datum/squad/completed_by  // Squad that completed the mission
+        datum/squad/failed_by     // Squad that failed the mission
+        
+        // Timing and cooldowns
+        started_at = 0            // World.time when mission started
+        completed_at = 0          // World.time when mission completed
+        fail_cooldown = 18000     // 30 minutes
+        success_cooldown = 6000   // 10 minutes
     
-    // Give a mission to a squad
+    // Initialize the mission
+    New()
+        ..()
+        started_at = world.time
+    
+    // Give mission to a squad
     proc/give_mission(datum/squad/S)
-        if(!S)
+        if(!S || (S in squads) || squads.len >= max_squads)
             return FALSE
         
-        S.mission += src
+        S.mission = src
+        squads += S
         return TRUE
-
-    // Remove a mission from a squad
+    
+    // Remove mission from a squad
     proc/remove_mission(datum/squad/S)
-        if(!S)
+        if(!S || !(S in squads))
             return FALSE
         
-        S.mission -= src
+        S.mission = null
+        squads -= S
         return TRUE
-
+    
+    // Complete the mission for a squad
     proc/complete(datum/squad/S)
-        if(completed)
-            return FALSE // If mission is already completed
-            
+        if(completed || !S || !(S in squads))
+            return FALSE
+        
         completed = TRUE
         completed_at = world.time
         completed_by = S
-
-        // Rewards for the completing squad
-        if(completed_by)
-            award_rewards(completed_by)
-            
-        // Fail the other squad
-        for(var/datum/squad/squad in squads)
-            if(squad != completed_by)
-                fail_mission(squad)
-
-            remove_mission(squad)
         
-        // Reset the squad list
-        squads.Cut()
+        // Award rewards
+        award_rewards(S)
+        
+        // Fail other squads
+        for(var/datum/squad/other_squad in squads)
+            if(other_squad != S)
+                fail_mission(other_squad)
+        
+        // Remove mission from all squads
+        for(var/datum/squad/assigned_squad in squads.Copy())
+            remove_mission(assigned_squad)
+        
+        // Clean up after a short delay (to allow messages to be seen)
+        spawn(100)
+            del(src)
+        
         return TRUE
-
+    
     // Fail a squad
     proc/fail_mission(datum/squad/S)
-        if(!S)
+        if(!S || !(S in squads) || S == completed_by)
             return FALSE
         
-        if(S == completed_by)
-            return FALSE
-
         failed_by = S
-
+        
+        // Apply cooldowns
         for(var/mob/M in S.members)
-            M << "You've failed [name]!"
-            apply_cooldowns(TRUE)
-
+            M.mission_cooldown = world.time + fail_cooldown
+            M << "You've failed the mission. Cooldown: [fail_cooldown/600] minutes."
+        
+        return TRUE
+    
     // Award rewards to a squad
     proc/award_rewards(datum/squad/S)
         if(!S)
             return FALSE
         
+        // Apply cooldowns
         for(var/mob/M in S.members)
+            M.mission_cooldown = world.time + success_cooldown
             M.ryo += reward
             M.mission_complete(rank)
-            apply_cooldowns(FALSE)
-
-    proc/apply_cooldowns(failed)
-        if(failed)
-            for(var/mob/M in failed_by.GetMembers())
-                M.mission_cooldown = world.time + fail_cooldown
-        else
-            for(var/mob/M in completed_by.GetMembers())
-                M.mission_cooldown = world.time + success_cooldown
+            M << "Mission complete! You received [reward] ryo. Cooldown: [success_cooldown/600] minutes."
         
-    proc/surrender_mission(datum/squad/S)
+        return TRUE
+    
+    // Surrender a mission
+    proc/surrender(datum/squad/S)
+        if(!S || !(S in squads))
+            return FALSE
+        
         fail_mission(S)
+        remove_mission(S)
+        
+        // If no more squads, clean up
+        if(squads.len <= 0)
+            del(src)
+        
+        return TRUE
 
-    proc/cleanup()
-        return
+/obj/mission/c_rank/delivery
+    name = "C-Rank: Package Delivery"
+    desc = "Deliver a package to the client."
+    reward = 300
+    rank = "C"
+    var
+        timer = 1800          // 30 minute default timer
+        min_timer = 300       // 5 minute minimum (when contested)
+        check_interval = 10   // How often to check for nearby players
+        timer_reduction = 1   // How many secondds to reduce per check
+        obj/mission_post/target_post  // The delivery target post
+        timer_running = FALSE
 
+    proc/setup_post()
+        if(timer_running)
+            return
+            
+        timer_running = TRUE
+        spawn(check_interval)
+            while(!completed && !failed_by)
+                var/list/nearby_mission_squads = list()
+                var/others_present = FALSE
+                
+                // Check for players near the post
+                for(var/mob/M in view(1, target_post))
+                    if(M.squad && (M.squad in squads))
+                        nearby_mission_squads |= M.squad
+                    else
+                        world << "Squad: [M.squad] not in mission squads: [squads]"
+                        others_present = TRUE
+                // If any assigned squad is present
+                if(nearby_mission_squads.len > 0)
+                    // If others are present or multiple squads, stop at min_timer
+                    if(others_present || nearby_mission_squads.len > 1)
+                        timer = max(min_timer, timer - timer_reduction)
+                        world << "Timer: [timer]"
+                    else
+                        // Single squad alone - can complete
+                        timer = max(0, timer - timer_reduction)
+                        world << "Timer: [timer]"
+                    
+                    // Complete mission when timer reaches 0
+                    if(timer <= 0)
+                        // Give completion to the first squad in the list
+                        complete(nearby_mission_squads[1])
+                        break
+                
+                sleep(check_interval)
+    
+    proc/give_delivery_mission(datum/squad/S, obj/mission_post/P)
+        if(!S || !P)
+            return FALSE
+        
+        target_post = P
+        P.active_mission = src
+
+        if(!give_mission(S))
+            return FALSE
+        
+        setup_post()
+        return TRUE
+
+// Mission Verb for surrender
 mob/verb/surrender_mission()
     set name = "Surrender Mission"
     set category = "Commands"
-
-    if(!usr.squad)
-        usr << "You are not in a squad!"
+    
+    if(!usr.squad || !usr.squad.mission)
+        usr << "You are not on a mission."
         return
     
-    if(!usr.squad.mission)
-        usr << "You are not on a mission!"
-        return
-    
-    surrender_mission(usr.squad)
-
-/datum/mission/crank/delivery
-    name = "Package Delivery"
-    description = "Deliver a package to the specified client. Wait at the post for the client to arrive."
-    reward = 300
-    rank = "C"
-    max_squads = 2
-    var
-        client_name
-        obj/item/mission_post/delivery_post
-        waiting_time = 2700
-        remaining_time = 2700
-        timer_paused = TRUE
-        timer_started = FALSE
-        timer_running = FALSE
-        client_arrived = FALSE
-        min_time_with_enemies = 300
-    
-    New()
-        ..()
-        var/list/possible_clients = list(
-            "Maehata, Saga",
-            "Samanosuke, Nobugi",
-            "Nonomi, Kuro"
-        )
-        client_name = pick(possible_clients)
-        description = "Deliver a package to [client_name]. Wait at the post for them to arrive."
-    
-    proc/setup_post(obj/item/mission_post/post)
-        if(!post)
-            return FALSE
-        
-        delivery_post = post
-        post.set_mission(src)
-        
-        // Notify the assigned squads
-        for(var/datum/squad/S in squads)
-            for(var/mob/M in S.members)
-                M << "Your squad has been assigned to deliver a package to [client_name]. Go to [post.name] and wait for the client."
-        
-        start_timer()
-        return TRUE
-        
-    // Start mission timer
-    proc/start_timer()
-        if(timer_running)
-            return
-
-        timer_running = TRUE
-        process_timer()
-    
-    // Process mission timer
-    proc/process_timer()
-        set waitfor = FALSE
-        
-        while(timer_running && !completed)
-            if(delivery_post)
-                check_post_status()
-            sleep(10) // Sleep for 1 second
-        
-        timer_running = FALSE
-    
-    proc/check_post_status()
-        // Skip if mission is done or client has arrived
-        if(completed || client_arrived)
-            return
-        
-        // Skip if post does not exist
-        if(!delivery_post)
-            return
-        
-        // Check for nearby players
-        var/list/nearby_players = list()
-        for(var/mob/M in range(5, delivery_post))
-            nearby_players += M
-        
-        // Determine if authorized squad members or enemies are present
-        var/enemies_present = FALSE
-        var/authorized_present = FALSE
-        
-        for(var/mob/player in nearby_players)
-            var/is_authorized = FALSE
-            for(var/datum/squad/S in squads)
-                if(player.squad == S)
-                    is_authorized = TRUE
-                    authorized_present = TRUE
-                    break
-            
-            if(!is_authorized)
-                enemies_present = TRUE
-
-        // Start timer when first authorized squad arrives
-        if(authorized_present && !timer_started)
-            timer_started = TRUE
-            timer_paused = FALSE
-        
-        if(!authorized_present) {
-            timer_paused = TRUE // Pause if no authorized squads are present
-        } else if(enemies_present) {
-            // If enemies are present, only pause when 5 minutes remain
-            timer_paused = (remaining_time <= min_time_with_enemies)
-        } else {
-            timer_paused = FALSE // Continue if authorized players and no enemies are present
-        }
-
-        // Count down if not paused
-        if(!timer_paused && remaining_time > 0) {
-            remaining_time -= 1
-        }
-        
-        // Handle client arrival
-        if(remaining_time <= 0 && !client_arrived) {
-            client_arrived = TRUE
-            delivery_post.icon_state = "client" // Change post icon to indicate client arrival
-        }
-    
-    proc/deliver_package(mob/player)
-        if(!player || !player.squad || !(player.squad in squads))
-            return FALSE
-        
-        if(!client_arrived) {
-            player << "The client hasn't arrived yet!"
-            return FALSE
-        }
-        
-        timer_running = FALSE
-        complete(player.squad)
-        return TRUE
-    
-    cleanup()
-        timer_running = FALSE
-        
-        if(delivery_post)
-            delivery_post.clear_mission()
-            delivery_post = null
-
-var/global/list/active_mission_posts = list() // Tracks which posts are in use
-
-// Mission assignment proc
-proc/assign_mission(datum/mission/M, datum/squad/S1, datum/squad/S2 = null)
-    if(!M || !S1)
-        return FALSE
-    
-    // Check if both squads are from the same village
-    if(S2 && S1.village == S2.village)
-        return
-    
-    // Find available posts
-    var/list/available_posts = get_available_posts()
-    if(!available_posts.len)
-        return
-    
-    // Choose a random available post
-    var/obj/item/mission_post/chosen_post = pick(available_posts)
-    
-    // Mark the post as in use
-    active_mission_posts[chosen_post] = M
-    
-    // Assign the mission to the squad(s)
-    M.give_mission(S1)
-    if(S2)
-        M.give_mission(S2)
-    
-    // Set up post for mission
-    if(istype(M, /datum/mission/crank/delivery))
-        var/datum/mission/crank/delivery/DM = M
-        DM.setup_post(chosen_post)
-    
-    return TRUE
-
-// Get available psots
-proc/get_available_posts()
-    var/list/available = list()
-    
-    for(var/obj/item/mission_post/P in world)
-        if(!(P in active_mission_posts))
-            available += P
-    
-    return available
+    var/obj/mission/M = usr.squad.mission
+    M.surrender(usr.squad)
+    usr << "You have surrendered your mission."

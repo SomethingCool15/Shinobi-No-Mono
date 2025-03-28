@@ -5,7 +5,7 @@
         list/offline_members = list() // Map of player names to ckeys for offline members
         name
         squad_composition
-        datum/mission/mission
+        obj/mission/mission
         max_members = 3
         datum/village/village  // Add village reference
 

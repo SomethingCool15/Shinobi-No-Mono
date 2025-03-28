@@ -13,6 +13,19 @@ player
 		var/obj/item/clothing/shirt/S = new()
 		var/obj/item/melee_weapons/katana/K = new()
 		var/obj/item/throwing_weapon/shuriken/SH = new()
+		
+		// Only create mission post if none exists at that location
+		var/turf/post_loc = locate(10,10,1)
+		if(!locate(/obj/mission_post) in post_loc)
+			var/obj/mission_post/P = new()
+			P.loc = post_loc
+		
+		// Only create mission board if none exists at that location
+		var/turf/board_loc = locate(10,13,1)
+		if(!locate(/obj/mission_board) in board_loc)
+			var/obj/mission_board/konoha_mission_board/MB = new()
+			MB.loc = board_loc
+		
 		src.AddToInventory(S)
 		src.AddToInventory(K)
 		src.AddToInventory(SH)
