@@ -57,17 +57,15 @@
         if(available_posts.len > 0)
             var/obj/mission_post/P = pick(available_posts)
             if(P.active_mission)
-                // Assign existing mission to squad
-                P.active_mission.give_delivery_mission(S, P)
+                // Join existing mission
+                P.active_mission.add_squad_to_delivery(S)
             else
-                // Create new mission at empty post
+                // Create new mission
                 var/obj/mission/c_rank/delivery/M = new()
-                M.target_post = P
-                P.active_mission = M
-                M.give_delivery_mission(S, P)
+                M.start_delivery_at(P, S)
             return TRUE
         else
-            world << "There are no meeting posts avaiable at the moment."
+            world << "There are no meeting posts available at the moment."
         return FALSE
 
 

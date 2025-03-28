@@ -162,17 +162,25 @@
                 
                 sleep(check_interval)
     
-    proc/give_delivery_mission(datum/squad/S, obj/mission_post/P)
-        if(!S || !P)
+    // Start the delivery mission at a specific post
+    proc/start_delivery_at(obj/mission_post/P, datum/squad/S)
+        if(!P || !S)
             return FALSE
         
         target_post = P
         P.active_mission = src
-
+        
         if(!give_mission(S))
             return FALSE
         
         setup_post()
+        return TRUE
+    
+    // Join ongoing delivery mission
+    proc/add_squad_to_delivery(datum/squad/S)
+        if(!give_mission(S))
+            return FALSE
+            
         return TRUE
 
 // Mission Verb for surrender
