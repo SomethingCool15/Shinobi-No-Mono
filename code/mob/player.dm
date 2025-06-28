@@ -1,3 +1,8 @@
+client
+	New()
+		..()
+		InitializeUI()
+		
 player
 	parent_type = /mob
 	icon = 'icons/base/Base_Pale.dmi'
@@ -16,6 +21,12 @@ player
 		src.AddToInventory(S)
 		src.AddToInventory(K)
 		src.AddToInventory(SH)
+		
+		// Show the main game UI after everything is set up
+		spawn(1)  // Give time for client.New() to complete
+			if(client.ui)
+				client.ui.ShowScene("main_game")
+		
 		if(playerList.len == 1)
 			spawn_test_players()
 		
