@@ -2,6 +2,10 @@
 	#define NEXT_SERVER_TICK world.time
 #endif
 
+#define HUDLIB_INFO 1
+#define HUDLIB_CONTROL_INFO 1
+#define HUDLIB_INPUT_INFO 1
+
 client
 	var/tmp
 		ui/ui
@@ -39,6 +43,10 @@ client
 	Del()
 		ui?.client = null
 		ui = null
+		..()
+
+	New()
+		InitializeUI()
 		..()
 
 ui

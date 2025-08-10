@@ -1,3 +1,6 @@
+#define HUD_LAYER TOPDOWN_LAYER
+#define HUD_PLANE 1
+
 #ifndef HUDLIB_INFO
 	#ifndef HUD_LAYER
 		#warn HUD_LAYER is undefined. Defaulting to TOPDOWN_LAYER. #define HUD_LAYER to suppress this warning
