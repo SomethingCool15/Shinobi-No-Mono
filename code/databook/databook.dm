@@ -180,7 +180,7 @@
                     </tr>"}
             
             html += rows + "</table>"
-            usr << browse(html, "window=databook_pages;size=600x400;can_close=1")
+            usr << browse(html, "window=databook_pages;size=600x400;can_close=1;")
     
         delete_databook_page()
             set name = "Delete Databook Page"
@@ -257,4 +257,3 @@
             GLOBAL_DATABOOK.save_pages()
             
             world << "Page '<a href='?src=\ref[GLOBAL_DATABOOK];page=[new_page_id]'>[new_title]</a>' has been updated."
-

@@ -1,8 +1,3 @@
-client
-	New()
-		..()
-		InitializeUI()
-		
 player
 	parent_type = /mob
 	icon = 'icons/base/Base_Pale.dmi'

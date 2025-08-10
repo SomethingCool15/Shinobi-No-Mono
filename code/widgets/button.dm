@@ -28,22 +28,19 @@ Button widgets can use 4-directional icon_states:
 hud/widget/button
 	parent_type = /hud/widget/control
 
-hud/widget/kunai_button
-	parent_type = /hud/widget/button
-	icon = 'icons/graphics/kunaibutton.dmi'
-	
 	New()
 		..()
-		world << "Kunai button created"
 	
 	Hovered()
 		..()
 		world << "Hovered"
+		filters = filter(type="outline", size=1,color="white",flags=OUTLINE_SHARP)
 	
 	Unhovered()	
 		..()
 		world << "Unhovered"
-	
+		filters = null
+
 	Pressed()
 		..()
 		world << "Pressed"
@@ -51,27 +48,15 @@ hud/widget/kunai_button
 	Released()
 		..()
 		world << "Released"
+
+hud/widget/kunai_button
+	parent_type = /hud/widget/button
+	icon = 'icons/graphics/kunaibutton.dmi'
+
+	Pressed()
+		..()
+		world << "Pressed kunai"
 
 hud/widget/sharingan_button
 	parent_type = /hud/widget/button
 	icon = 'icons/graphics/sharinganbutton.dmi'
-
-	New()
-		..()
-		world << "Sharingan button created"
-	
-	Hovered()
-		..()
-		world << "Hovered"
-	
-	Unhovered()	
-		..()
-		world << "Unhovered"
-	
-	Pressed()
-		..()
-		world << "Pressed"
-	
-	Released()
-		..()
-		world << "Released"
