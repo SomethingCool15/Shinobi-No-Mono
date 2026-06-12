@@ -1,17 +1,3 @@
-/datum/ruling
-    var/text
-    var/author
-    var/date
-    var/last_editor
-    var/last_edited
-
-    New(new_text, new_author)
-        text = new_text
-        author = new_author
-        date = time2text(world.realtime, "DD-MM-YYYY")
-        last_editor = author
-        last_edited = date
-
 /datum/rank
     var
         rank_name
